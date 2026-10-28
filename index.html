@@ -209,6 +209,14 @@
   .code-msg { min-height: 1.4em; font-weight: 600; }
   .code-msg.ok { color: var(--good); }
   .code-msg.bad { color: #ff8a8a; }
+  /* start over */
+  .btn-danger-outline { background: transparent; box-shadow: none; border: 2px solid #ff8a8a; color: #ff8a8a; }
+  .btn-danger-outline:hover { background: rgb(255 138 138 / 0.12); }
+  .btn-danger { background: #c62f2f; color: #ffffff; box-shadow: 0 5px 0 #7d1a1a; }
+  .btn-danger:hover { background: #d63a3a; }
+  .reset-confirm { display: flex; flex-direction: column; gap: var(--space-3); }
+  .warn { color: #ff8a8a; font-size: var(--text-lg); }
+  .loss { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: var(--space-1); font-size: var(--text-base); color: var(--text); line-height: 1.4; }
   /* stats */
   .stats { margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
   .stat { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); background: var(--surface); border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); }
@@ -341,8 +349,7 @@
       <button class="btn back-btn" data-act="back" data-autofocus>&larr; Back</button>
     </div>
     <h2>Settings</h2>
-    <div class="setting"><span id="lblMusic">Music</span><span class="switch-wrap"><span class="switch-text" data-for="music"></span><button class="switch" role="switch" aria-labelledby="lblMusic" data-setting="music"></button></span></div>
-    <div class="setting"><span id="lblSound">Sound effects</span><span class="switch-wrap"><span class="switch-text" data-for="sound"></span><button class="switch" role="switch" aria-labelledby="lblSound" data-setting="sound"></button></span></div>
+    <div class="setting"><span id="lblSound">Sound</span><span class="switch-wrap"><span class="switch-text" data-for="sound"></span><button class="switch" role="switch" aria-labelledby="lblSound" data-setting="sound"></button></span></div>
     <div class="setting"><span id="lblVibe">Vibration</span><span class="switch-wrap"><span class="switch-text" data-for="vibe"></span><button class="switch" role="switch" aria-labelledby="lblVibe" data-setting="vibe"></button></span></div>
     <div class="setting"><span id="lblShake">Screen shake</span><span class="switch-wrap"><span class="switch-text" data-for="shake"></span><button class="switch" role="switch" aria-labelledby="lblShake" data-setting="shake"></button></span></div>
     <h3>Your progress</h3>
@@ -353,6 +360,23 @@
       <textarea id="codeBox" class="code-box" rows="3" spellcheck="false" autocomplete="off" placeholder="Paste a save code here to load it"></textarea>
       <button class="btn" data-code="load">Load this save code</button>
       <p id="codeMsg" class="code-msg" role="status"></p>
+    </div>
+    <h3>Start over</h3>
+    <div class="card">
+      <p>Erase all your progress and play the game from the very beginning.</p>
+      <button class="btn btn-danger-outline" data-reset="ask">Start over&hellip;</button>
+      <div id="resetConfirm" class="reset-confirm" hidden>
+        <p class="warn"><strong>Warning: this erases everything.</strong> You will lose:</p>
+        <ul id="resetLoss" class="loss"></ul>
+        <p>Your sound and other settings stay the same.</p>
+        <button class="btn btn-danger" data-reset="do">Erase everything</button>
+        <button class="btn btn-primary" data-reset="cancel">Cancel, keep my progress</button>
+      </div>
+      <div id="undoBox" class="reset-confirm" hidden>
+        <p>Erased by mistake? You can bring back what you had before you started over.</p>
+        <button class="btn" data-reset="undo">Bring back my old progress</button>
+      </div>
+      <p id="resetMsg" class="code-msg ok" role="status"></p>
     </div>
   </div>
 </section>
@@ -438,7 +462,7 @@ function defaults() {
   return { bests: LEVELS.map(() => 0), played: LEVELS.map(() => false), level: 0, coins: 0,
            up: { shield: 0, magnet: 0, luck: 0, rich: 0 }, skins: ['sky'], skin: 'sky', hats: ['none'], hat: 'none',
            stats: { games: 0, dodged: 0, close: 0, coins: 0, time: 0 },
-           settings: { sound: true, music: true, vibe: true, shake: !reducedMotion }, tutorialDone: false };
+           settings: { sound: true, vibe: true, shake: !reducedMotion }, tutorialDone: false };
 }
 // Fill in anything an older or partial save is missing.
 function normalize(s) {
@@ -480,6 +504,15 @@ persist();
 // Ask the browser not to clear the save when the phone runs low on space.
 try { navigator.storage && navigator.storage.persist && navigator.storage.persist().catch(() => {}); } catch (e) {}
 
+function replaceSave(next) {
+  for (const k of Object.keys(save)) delete save[k];
+  Object.assign(save, next);
+  persist();
+}
+
+// Start over keeps the old progress here, so it can be brought back.
+const UNDO_KEY = 'dodge-save-before-reset';
+
 // Save codes move progress to another phone: copy on one, paste on the other.
 function saveCode() {
   return 'DODGE1-' + btoa(unescape(encodeURIComponent(JSON.stringify(save))));
@@ -490,10 +523,7 @@ function loadSaveCode(code) {
   try {
     const s = JSON.parse(decodeURIComponent(escape(atob(m[1]))));
     if (!s || typeof s.coins !== 'number') return false;
-    const fresh = normalize(s);
-    for (const k of Object.keys(save)) delete save[k];
-    Object.assign(save, fresh);
-    persist();
+    replaceSave(normalize(s));
     return true;
   } catch (e) { return false; }
 }
@@ -527,32 +557,6 @@ const sfx = {
   click:  () => tone(520, 0.05, { type: 'triangle', vol: 0.07 }),
   buy:    () => [660, 880, 1320].forEach((f, i) => tone(f, 0.14, { type: 'triangle', vol: 0.12, delay: i * 0.07 })),
 };
-// Calm background music: a slow four-chord loop with a gentle plucked melody.
-const CHORDS = [[261.63, 329.63, 392.0, 493.88], [220.0, 261.63, 329.63, 392.0], [174.61, 220.0, 261.63, 329.63], [196.0, 246.94, 293.66, 392.0]];
-const music = { out: null, next: 0, step: 0 };
-function musicNote(freq, t0, dur, type, vol, attack) {
-  const o = actx.createOscillator(), gn = actx.createGain();
-  o.type = type; o.frequency.value = freq;
-  gn.gain.setValueAtTime(0.0001, t0);
-  gn.gain.exponentialRampToValueAtTime(vol, t0 + attack);
-  gn.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-  o.connect(gn).connect(music.out);
-  o.start(t0); o.stop(t0 + dur + 0.05);
-}
-function musicTick() {
-  if (!actx || actx.state !== 'running' || !save.settings.music || document.hidden) return;
-  if (!music.out) { music.out = actx.createGain(); music.out.gain.value = 1; music.out.connect(actx.destination); }
-  const beat = 60 / 76 / 2;   // eighth notes at a relaxed 76 bpm
-  if (music.next < actx.currentTime) music.next = actx.currentTime + 0.05;
-  while (music.next < actx.currentTime + 0.6) {
-    const chord = CHORDS[Math.floor(music.step / 8) % CHORDS.length], pos = music.step % 8;
-    if (pos === 0) chord.forEach(f => musicNote(f / 2, music.next, beat * 8.5, 'sine', 0.018, 0.4));
-    musicNote(chord[[0, 1, 2, 3, 2, 1, 2, 3][pos]], music.next, beat * 1.6, 'triangle', 0.016, 0.02);
-    music.next += beat; music.step++;
-  }
-}
-setInterval(musicTick, 200);
-
 function vibrate(p) { try { if (save.settings.vibe && navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
 
 // ---------- Canvas ----------
@@ -1413,7 +1417,7 @@ function showScreen(name) {
   if (!name) return;
   if (name === 'menu') { $('menuCoins').textContent = save.coins; renderLevels(); setBg(save.level); }
   if (name === 'shop') renderShop();
-  if (name === 'settings') renderSettings();
+  if (name === 'settings') { renderSettings(); showReset(false); $('resetMsg').textContent = ''; $('codeMsg').textContent = ''; }
   if (name === 'stats') renderStats();
   const f = $(name).querySelector('[data-autofocus]');
   if (f) f.focus({ preventScroll: true });
@@ -1620,7 +1624,54 @@ $('settings').addEventListener('click', e => {
   }
 });
 
+function hasUndo() { try { return !!localStorage.getItem(UNDO_KEY); } catch (e) { return false; } }
+function showReset(open) {
+  $('resetConfirm').hidden = !open;
+  document.querySelector('[data-reset="ask"]').hidden = open;
+  if (open) {
+    const best = save.bests.filter(b => b > 0).length;
+    const ups = UPGRADES.reduce((n, u) => n + save.up[u.id], 0);
+    $('resetLoss').innerHTML = [
+      `${save.coins} coins`,
+      `${save.skins.length - 1} characters you bought and ${save.hats.length - 1} hats`,
+      `${ups} upgrade levels`,
+      `${LEVELS.filter((_, i) => isUnlocked(i)).length - 1} unlocked levels and best scores on ${best} levels`,
+      `your stats (${save.stats.games} games played)`,
+    ].map(t => `<li>${t}</li>`).join('');
+    document.querySelector('[data-reset="cancel"]').focus({ preventScroll: true });
+  }
+}
+$('settings').addEventListener('click', e => {
+  const b = e.target.closest('[data-reset]');
+  if (!b) return;
+  const act = b.dataset.reset;
+  $('resetMsg').textContent = '';
+  if (act === 'ask') showReset(true);
+  else if (act === 'cancel') { showReset(false); $('resetMsg').textContent = 'Nothing was erased.'; }
+  else if (act === 'do') {
+    try { localStorage.setItem(UNDO_KEY, JSON.stringify(save)); } catch (err) {}
+    const fresh = defaults();
+    fresh.settings = { ...save.settings };
+    replaceSave(fresh);
+    shownCoins = 0;
+    showReset(false);
+    renderSettings();
+    $('resetMsg').textContent = 'Your progress was erased. You are starting fresh.';
+  } else if (act === 'undo') {
+    let old = null;
+    try { old = JSON.parse(localStorage.getItem(UNDO_KEY)); } catch (err) {}
+    if (!old) return;
+    replaceSave(normalize(old));
+    try { localStorage.removeItem(UNDO_KEY); } catch (err) {}
+    shownCoins = save.coins;
+    sfx.buy();
+    renderSettings();
+    $('resetMsg').textContent = `Your old progress is back: ${save.coins} coins.`;
+  }
+});
+
 function renderSettings() {
+  $('undoBox').hidden = !hasUndo();
   for (const sw of document.querySelectorAll('[data-setting]')) {
     const on = save.settings[sw.dataset.setting];
     sw.setAttribute('aria-checked', on);
@@ -1634,7 +1685,6 @@ $('settings').addEventListener('click', e => {
   save.settings[k] = !save.settings[k];
   persist(); renderSettings();
   if (k === 'sound') { ensureAudio(); sfx.click(); }
-  if (k === 'music') ensureAudio();
   if (k === 'vibe') vibrate(40);
   if (k === 'shake' && save.settings.shake) { shake = 8; }
 });
