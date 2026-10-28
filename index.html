@@ -370,6 +370,8 @@ for (const id of save.skins) save.coins += OLD_SKIN_COST[id] || 0;
 save.skins = save.skins.filter(id => SKINS.some(k => k.id === id));
 if (!save.skins.includes('sky')) save.skins.unshift('sky');
 if (!save.skins.includes(save.skin)) save.skin = 'sky';
+// A save can point at a level that no longer exists (the Rainbow Boss was removed).
+if (!(save.level < LEVELS.length)) save.level = 0;
 persist();
 function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
 const isUnlocked = i => i === 0 || save.bests[i - 1] >= UNLOCK_SCORE;
