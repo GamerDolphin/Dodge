@@ -135,26 +135,27 @@
   #menuChar { width: 110px; height: 110px; }
   .goal { font-size: var(--text-sm); font-weight: 600; color: var(--text-muted); }
   .levels-head { margin-top: var(--space-2); align-self: flex-start; }
-  .levels { display: flex; flex-direction: column; gap: var(--space-3); width: 100%; }
-  .level-btn {
-    display: flex; align-items: center; gap: var(--space-3); width: 100%; min-height: 72px;
-    padding: var(--space-2) var(--space-4) var(--space-2) var(--space-2);
-    border: 0; border-radius: var(--radius-lg); text-align: left; cursor: pointer;
+  .levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); width: 100%; }
+  .level-tile {
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    min-height: 128px; padding: var(--space-2) var(--space-1) var(--space-3);
+    border: 0; border-radius: var(--radius-lg); cursor: pointer; text-align: center;
     font-family: var(--font); color: var(--text); background: var(--surface-2); box-shadow: 0 5px 0 var(--edge);
     transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), background var(--dur-fast);
   }
-  .level-btn:hover { background: #343d66; }
-  .level-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--edge); }
-  .level-btn.current { background: var(--gold); color: var(--on-gold); box-shadow: 0 6px 0 var(--gold-dark); }
-  .level-btn.current:hover { background: #ffdb66; }
-  .level-btn.current .level-sub { color: var(--on-gold); }
-  .level-btn:disabled { background: var(--surface); box-shadow: none; cursor: default; transform: none; }
-  .level-btn:focus-visible { outline: var(--focus); outline-offset: 3px; }
-  .level-icon { width: 56px; height: 56px; flex: none; }
-  .level-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
-  .level-name { font-size: var(--text-lg); font-weight: 700; line-height: 1.2; }
-  .level-sub { font-size: var(--text-sm); font-weight: 500; color: var(--text-muted); }
-  .level-go { font-size: var(--text-lg); font-weight: 700; }
+  .level-tile:hover { background: #343d66; }
+  .level-tile:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--edge); }
+  .level-tile.current { background: var(--gold); color: var(--on-gold); box-shadow: 0 6px 0 var(--gold-dark); }
+  .level-tile.current:hover { background: #ffdb66; }
+  .level-tile.current .level-sub, .level-tile.current .level-noun { color: var(--on-gold); }
+  .level-tile:disabled { background: var(--surface); box-shadow: none; cursor: default; transform: none; }
+  .level-tile:focus-visible { outline: var(--focus); outline-offset: 3px; }
+  .level-icon { width: 52px; height: 52px; flex: none; }
+  .level-name { font-size: var(--text-base); font-weight: 700; line-height: 1.1; }
+  .level-noun { font-size: var(--text-sm); font-weight: 500; color: var(--text-muted); line-height: 1.15; }
+  .level-sub { font-size: var(--text-sm); font-weight: 600; color: var(--text-muted); margin-top: 2px; }
+  .level-tile .new-tag { position: absolute; top: 6px; right: 6px; margin: 0; font-size: 0.875rem; }
+  .level-tile .lock { position: absolute; top: 12px; right: 8px; margin: 0; }
   .new-tag { display: inline-block; margin-right: var(--space-2); padding: 0 var(--space-2); border-radius: 999px; background: var(--good); color: #0f2a14; font-weight: 700; }
   .lock { position: relative; flex: none; width: 22px; height: 17px; margin: 10px 4px 0; border-radius: 4px; background: var(--text-muted); }
   .lock::before { content: ""; position: absolute; left: 3px; top: -11px; width: 16px; height: 14px; border: 3px solid var(--text-muted); border-bottom: 0; border-radius: 8px 8px 0 0; box-sizing: border-box; }
@@ -175,7 +176,32 @@
   .card .btn { min-height: var(--target); font-size: var(--text-base); }
   .btn-buy { background: var(--gold); color: var(--on-gold); box-shadow: 0 5px 0 var(--gold-dark); }
   .btn-buy:hover { background: #ffdb66; }
-  .skins { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
+  /* shop: preview stage on top, tabs, a compact grid, one action button */
+  .shop-panel { height: 100%; margin: 0; gap: var(--space-3); padding-bottom: calc(env(safe-area-inset-bottom) + var(--space-4)); }
+  .shop-panel .top-bar h2 { font-size: var(--text-xl); }
+  .stage { flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; background: var(--surface); border-radius: var(--radius-lg); padding: 0 var(--space-3) var(--space-3); }
+  #shopPreview { width: 100%; height: 130px; }
+  .stage-label { font-size: var(--text-lg); font-weight: 700; }
+  .tabs { flex: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); }
+  .tab { min-height: 48px; border: 0; border-radius: var(--radius-sm); cursor: pointer; font: 600 var(--text-base) var(--font); color: var(--text-muted); background: var(--surface); }
+  .tab[aria-selected="true"] { background: var(--surface-2); color: var(--text); box-shadow: inset 0 -4px 0 var(--gold); }
+  .tab:focus-visible, .item:focus-visible { outline: var(--focus); outline-offset: 2px; }
+  .shop-items { flex: 1; min-height: 0; overflow-y: auto; touch-action: pan-y; padding: 4px; margin: -4px; }
+  .shop-items.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2); align-content: start; }
+  .shop-items.list { display: flex; flex-direction: column; gap: var(--space-3); }
+  .item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: var(--space-1) 0 var(--space-2); border: 0; border-radius: var(--radius-sm); background: var(--surface); color: var(--text); cursor: pointer; font-family: var(--font); }
+  .item canvas { width: 56px; height: 56px; }
+  .item.sel { background: var(--surface-2); box-shadow: 0 0 0 3px #ffffff; }
+  .item-tag { font-size: var(--text-sm); font-weight: 600; color: var(--text-muted); display: inline-flex; align-items: center; gap: 4px; }
+  .item-tag.on { color: var(--gold); }
+  .item-tag.price { color: var(--text); }
+  .coin-icon.small { width: 14px; height: 14px; box-shadow: inset 0 0 0 1.5px #c99400; }
+  #shopAction { flex: none; min-height: 60px; }
+  /* stats */
+  .stats { margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+  .stat { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); background: var(--surface); border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); }
+  .stat dt { font-size: var(--text-base); color: var(--text-muted); }
+  .stat dd { margin: 0; font-size: var(--text-lg); font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
   .skin { align-items: center; text-align: center; }
   .skin canvas { width: 96px; height: 96px; }
   .skin.wearing { box-shadow: 0 0 0 3px var(--gold); }
@@ -224,12 +250,13 @@
     <canvas id="menuChar" width="300" height="300" aria-hidden="true"></canvas>
     <p>Slide your finger to move.<br>Dodge the falling shapes. Grab the coins.</p>
     <span class="coin-pill"><span class="coin-icon"></span><span id="menuCoins">0</span></span>
-    <h3 class="levels-head">Pick a level</h3>
+    <h3 class="levels-head">Tap a level to play</h3>
     <div id="levelList" class="levels"></div>
     <div class="row">
       <button class="btn" data-act="shop">Shop</button>
-      <button class="btn" data-act="settings">Settings</button>
+      <button class="btn" data-act="stats">My stats</button>
     </div>
+    <button class="btn" data-act="settings">Settings</button>
   </div>
 </section>
 
@@ -264,17 +291,35 @@
   </div>
 </section>
 
-<section id="shop" class="screen scroll">
+<section id="shop" class="screen">
+  <div class="panel shop-panel">
+    <div class="top-bar">
+      <button class="btn back-btn" data-act="back" data-autofocus>&larr; Back</button>
+      <h2>Shop</h2>
+      <span class="coin-pill"><span class="coin-icon"></span><span id="shopCoins">0</span></span>
+    </div>
+    <div class="stage">
+      <canvas id="shopPreview" aria-hidden="true"></canvas>
+      <div class="stage-label"><span id="previewName"></span> <span id="previewTag" class="rarity"></span></div>
+      <div id="previewPerk" class="perk"></div>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Shop sections">
+      <button class="tab" role="tab" data-tab="chars">Characters</button>
+      <button class="tab" role="tab" data-tab="hats">Hats</button>
+      <button class="tab" role="tab" data-tab="ups">Upgrades</button>
+    </div>
+    <div id="shopItems" class="shop-items" role="tabpanel"></div>
+    <button id="shopAction" class="btn"></button>
+  </div>
+</section>
+
+<section id="stats" class="screen scroll">
   <div class="panel">
     <div class="top-bar">
       <button class="btn back-btn" data-act="back" data-autofocus>&larr; Back</button>
-      <span class="coin-pill"><span class="coin-icon"></span><span id="shopCoins">0</span></span>
     </div>
-    <h2>Shop</h2>
-    <h3>Upgrades</h3>
-    <div id="upgradeList" class="row" style="flex-direction:column"></div>
-    <h3>New looks</h3>
-    <div id="skinList" class="skins"></div>
+    <h2>My stats</h2>
+    <dl id="statsList" class="stats"></dl>
   </div>
 </section>
 
@@ -284,7 +329,8 @@
       <button class="btn back-btn" data-act="back" data-autofocus>&larr; Back</button>
     </div>
     <h2>Settings</h2>
-    <div class="setting"><span id="lblSound">Sound</span><span class="switch-wrap"><span class="switch-text" data-for="sound"></span><button class="switch" role="switch" aria-labelledby="lblSound" data-setting="sound"></button></span></div>
+    <div class="setting"><span id="lblMusic">Music</span><span class="switch-wrap"><span class="switch-text" data-for="music"></span><button class="switch" role="switch" aria-labelledby="lblMusic" data-setting="music"></button></span></div>
+    <div class="setting"><span id="lblSound">Sound effects</span><span class="switch-wrap"><span class="switch-text" data-for="sound"></span><button class="switch" role="switch" aria-labelledby="lblSound" data-setting="sound"></button></span></div>
     <div class="setting"><span id="lblVibe">Vibration</span><span class="switch-wrap"><span class="switch-text" data-for="vibe"></span><button class="switch" role="switch" aria-labelledby="lblVibe" data-setting="vibe"></button></span></div>
     <div class="setting"><span id="lblShake">Screen shake</span><span class="switch-wrap"><span class="switch-text" data-for="shake"></span><button class="switch" role="switch" aria-labelledby="lblShake" data-setting="shake"></button></span></div>
   </div>
@@ -316,18 +362,37 @@ const SKINS = [
   { id: 'sky',     name: 'Sky',        color: '#5ec8ff', cost: 0,   rarity: 0 },
   { id: 'froggy',  name: 'Froggy',     color: '#6fd67a', cost: 40,  rarity: 0, body: 'frog' },
   { id: 'kitty',   name: 'Kitty',      color: '#f2a65a', cost: 70,  rarity: 1 },
+  { id: 'bee',     name: 'Bee',        color: '#ffc93c', cost: 60,  rarity: 1 },
+  { id: 'pumpkin', name: 'Pumpkin',    color: '#ff8c1a', cost: 80,  rarity: 1 },
+  { id: 'panda',   name: 'Panda',      color: '#f4f5fb', cost: 90,  rarity: 1 },
   { id: 'penguin', name: 'Penguin',    color: '#4a6fb5', cost: 100, rarity: 1 },
+  { id: 'snowman', name: 'Snowman',    color: '#f4f5fb', cost: 110, rarity: 1 },
+  { id: 'dino',    name: 'Dino',       color: '#3fc1a5', cost: 130, rarity: 2 },
   { id: 'robot',   name: 'Robo',       color: '#a9bcd0', cost: 150, rarity: 2, body: 'robot', trail: 'spark',   perk: 'Sparks when moving' },
+  { id: 'owl',     name: 'Owl',        color: '#a9744f', cost: 160, rarity: 2 },
   { id: 'ghost',   name: 'Boo',        color: '#eef1f6', cost: 200, rarity: 2, body: 'ghost', trail: 'ghost',   perk: 'Spooky after-images' },
   { id: 'blaze',   name: 'Blue Blaze', color: '#3557d6', cost: 300, rarity: 3, trail: 'fire',    perk: 'Blue fire trail' },
   { id: 'unicorn', name: 'Unicorn',    color: '#f6f0ff', cost: 400, rarity: 3, trail: 'rainbow', perk: 'Rainbow trail' },
 ];
 const RARITY = ['Common', 'Rare', 'Epic', 'Legendary'];
+// Hats fit on any character.
+const HATS = [
+  { id: 'none',   name: 'No hat',     cost: 0 },
+  { id: 'cap',    name: 'Ball cap',   cost: 25 },
+  { id: 'bow',    name: 'Bow',        cost: 25 },
+  { id: 'party',  name: 'Party hat',  cost: 40 },
+  { id: 'flower', name: 'Flower',     cost: 40 },
+  { id: 'beanie', name: 'Beanie',     cost: 60 },
+  { id: 'cowboy', name: 'Cowboy hat', cost: 80 },
+  { id: 'tophat', name: 'Top hat',    cost: 100 },
+  { id: 'crown',  name: 'Crown',      cost: 150 },
+];
 const RAINBOW = ['#ff5d5d', '#ffa94d', '#ffd23f', '#7ee08a', '#5ec8ff', '#b48cff'];
 const UPGRADES = [
   { id: 'shield', name: 'Shield',      desc: 'A bubble that saves you from one hit. Each level adds one more bubble.', costs: [20, 60, 150] },
   { id: 'magnet', name: 'Coin magnet', desc: 'Pulls nearby coins to you. Each level reaches further.', costs: [15, 45, 120] },
   { id: 'luck',   name: 'Lucky coins', desc: 'More coins fall. Each level adds more.', costs: [15, 45, 120] },
+  { id: 'rich',   name: 'Rich coins',  desc: 'Every coin is worth more. Each level adds 1.', costs: [40, 120, 300] },
 ];
 const LEVELS = [
   { name: 'Red',    noun: 'squares',   shape: 'square',   size: 1,    color: '#ff5d5d', dark: '#b8323f', bg: ['#1b2140', '#11142a'] },
@@ -337,23 +402,28 @@ const LEVELS = [
   { name: 'Blue',   noun: 'pluses',    shape: 'plus',     size: 1.05, color: '#3d8bff', dark: '#2457b8', bg: ['#15213f', '#0c1328'] },
   { name: 'Purple', noun: 'stars',     shape: 'star',     size: 1.2,  color: '#b57bff', dark: '#7445c2', bg: ['#1f1838', '#110c22'] },
   { name: 'Pink',   noun: 'hexagons',  shape: 'hexagon',  size: 1.05, color: '#ff6fb5', dark: '#b83d7a', bg: ['#2a1730', '#170c1c'] },
+  { name: 'Silver', noun: 'moons',     shape: 'moon',     size: 1.15, color: '#d4d9e6', dark: '#7d8799', bg: ['#1a1d2e', '#0d0f1a'] },
+  { name: 'Ice',    noun: 'snowflakes', shape: 'snowflake', size: 1.2, color: '#9fe3ff', dark: '#4a9cc2', bg: ['#132a40', '#0a1626'] },
 ];
 const UNLOCK_SCORE = 200;
 const MAGNET_RANGE = [0, 80, 130, 190];
 const COIN_EVERY = [3.2, 2.5, 1.9, 1.4];
+const coinValue = () => 1 + save.up.rich;
 
 // ---------- Save ----------
 const SAVE_KEY = 'dodge-save-v2';
 function defaults() {
-  return { bests: LEVELS.map(() => 0), played: LEVELS.map(() => false), level: 0, coins: 0, up: { shield: 0, magnet: 0, luck: 0 }, skins: ['sky'], skin: 'sky',
-           settings: { sound: true, vibe: true, shake: !reducedMotion }, tutorialDone: false };
+  return { bests: LEVELS.map(() => 0), played: LEVELS.map(() => false), level: 0, coins: 0,
+           up: { shield: 0, magnet: 0, luck: 0, rich: 0 }, skins: ['sky'], skin: 'sky', hats: ['none'], hat: 'none',
+           stats: { games: 0, dodged: 0, close: 0, coins: 0, time: 0 },
+           settings: { sound: true, music: true, vibe: true, shake: !reducedMotion }, tutorialDone: false };
 }
 function loadSave() {
   const d = defaults();
   try {
     const s = JSON.parse(localStorage.getItem(SAVE_KEY));
     if (s) {
-      const out = { ...d, ...s, up: { ...d.up, ...s.up }, settings: { ...d.settings, ...s.settings } };
+      const out = { ...d, ...s, up: { ...d.up, ...s.up }, stats: { ...d.stats, ...s.stats }, settings: { ...d.settings, ...s.settings } };
       if (!Array.isArray(s.bests)) out.bests = [s.best || 0];   // older saves had one best score, now it's Red's
       while (out.bests.length < LEVELS.length) out.bests.push(0);
       if (!Array.isArray(s.played)) out.played = out.bests.map(b => b > 0);
@@ -376,6 +446,7 @@ persist();
 function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
 const isUnlocked = i => i === 0 || save.bests[i - 1] >= UNLOCK_SCORE;
 const skin = () => SKINS.find(k => k.id === save.skin) || SKINS[0];
+if (!save.hats.includes(save.hat)) save.hat = 'none';
 
 // ---------- Audio (tiny synth, no files) ----------
 let actx = null;
@@ -403,6 +474,32 @@ const sfx = {
   click:  () => tone(520, 0.05, { type: 'triangle', vol: 0.07 }),
   buy:    () => [660, 880, 1320].forEach((f, i) => tone(f, 0.14, { type: 'triangle', vol: 0.12, delay: i * 0.07 })),
 };
+// Calm background music: a slow four-chord loop with a gentle plucked melody.
+const CHORDS = [[261.63, 329.63, 392.0, 493.88], [220.0, 261.63, 329.63, 392.0], [174.61, 220.0, 261.63, 329.63], [196.0, 246.94, 293.66, 392.0]];
+const music = { out: null, next: 0, step: 0 };
+function musicNote(freq, t0, dur, type, vol, attack) {
+  const o = actx.createOscillator(), gn = actx.createGain();
+  o.type = type; o.frequency.value = freq;
+  gn.gain.setValueAtTime(0.0001, t0);
+  gn.gain.exponentialRampToValueAtTime(vol, t0 + attack);
+  gn.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(gn).connect(music.out);
+  o.start(t0); o.stop(t0 + dur + 0.05);
+}
+function musicTick() {
+  if (!actx || actx.state !== 'running' || !save.settings.music || document.hidden) return;
+  if (!music.out) { music.out = actx.createGain(); music.out.gain.value = 1; music.out.connect(actx.destination); }
+  const beat = 60 / 76 / 2;   // eighth notes at a relaxed 76 bpm
+  if (music.next < actx.currentTime) music.next = actx.currentTime + 0.05;
+  while (music.next < actx.currentTime + 0.6) {
+    const chord = CHORDS[Math.floor(music.step / 8) % CHORDS.length], pos = music.step % 8;
+    if (pos === 0) chord.forEach(f => musicNote(f / 2, music.next, beat * 8.5, 'sine', 0.018, 0.4));
+    musicNote(chord[[0, 1, 2, 3, 2, 1, 2, 3][pos]], music.next, beat * 1.6, 'triangle', 0.016, 0.02);
+    music.next += beat; music.step++;
+  }
+}
+setInterval(musicTick, 200);
+
 function vibrate(p) { try { if (save.settings.vibe && navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
 
 // ---------- Canvas ----------
@@ -470,6 +567,27 @@ function drawCharacter(c, x, y, r, sk, o = {}) {
       c.beginPath(); c.moveTo(s * r * 0.76, -r * 0.5); c.lineTo(s * r * 0.72, -r * 1.0); c.lineTo(s * r * 0.36, -r * 0.8); c.closePath(); c.fill();
     }
   }
+  if (sk.id === 'panda') {
+    c.fillStyle = COL.ink;
+    for (const s of [-1, 1]) { c.beginPath(); c.arc(s * r * 0.64, -r * 0.7, r * 0.3, 0, TAU); c.fill(); }
+  }
+  if (sk.id === 'owl') {
+    c.fillStyle = '#7a4f30';
+    for (const s of [-1, 1]) { c.beginPath(); c.moveTo(s * r * 0.85, -r * 0.4); c.lineTo(s * r * 0.75, -r * 1.15); c.lineTo(s * r * 0.3, -r * 0.85); c.closePath(); c.fill(); }
+  }
+  if (sk.id === 'dino') {
+    c.fillStyle = '#2a8f79';
+    for (const [sx, sy, sz] of [[-0.55, -0.72, 0.26], [0, -0.92, 0.32], [0.55, -0.72, 0.26]]) {
+      c.beginPath(); c.moveTo((sx - sz * 0.7) * r, (sy + 0.15) * r); c.lineTo(sx * r, (sy - sz) * r); c.lineTo((sx + sz * 0.7) * r, (sy + 0.15) * r); c.closePath(); c.fill();
+    }
+  }
+  if (sk.id === 'bee') {
+    c.fillStyle = 'rgba(235,248,255,0.85)'; c.strokeStyle = 'rgba(120,160,190,0.8)'; c.lineWidth = r * 0.05;
+    for (const s of [-1, 1]) { c.beginPath(); c.ellipse(s * r * 0.62, -r * 0.82, r * 0.38, r * 0.24, s * 0.5, 0, TAU); c.fill(); c.stroke(); }
+    c.strokeStyle = COL.ink; c.lineWidth = r * 0.06;
+    c.beginPath(); c.moveTo(-r * 0.2, -r * 0.9); c.lineTo(-r * 0.35, -r * 1.25); c.moveTo(r * 0.2, -r * 0.9); c.lineTo(r * 0.35, -r * 1.25); c.stroke();
+    c.fillStyle = COL.ink; c.beginPath(); c.arc(-r * 0.35, -r * 1.27, r * 0.08, 0, TAU); c.arc(r * 0.35, -r * 1.27, r * 0.08, 0, TAU); c.fill();
+  }
   if (sk.id === 'robot') {
     c.strokeStyle = '#6c7a90'; c.lineWidth = r * 0.1;
     c.beginPath(); c.moveTo(0, -r * 0.9); c.lineTo(0, -r * 1.28); c.stroke();
@@ -501,6 +619,17 @@ function drawCharacter(c, x, y, r, sk, o = {}) {
   c.save();
   c.clip();
   if (sk.id === 'penguin') { c.fillStyle = '#f4f5fb'; c.beginPath(); c.ellipse(0, r * 0.2, r * 0.66, r * 0.74, 0, 0, TAU); c.fill(); }
+  if (sk.id === 'owl') { c.fillStyle = '#d8b48a'; c.beginPath(); c.ellipse(0, r * 0.42, r * 0.55, r * 0.6, 0, 0, TAU); c.fill(); }
+  if (sk.id === 'bee') {
+    c.fillStyle = '#3a2a12';
+    for (const by of [0.3, 0.68]) c.fillRect(-r * 1.2, by * r, r * 2.4, r * 0.2);
+  }
+  if (sk.id === 'pumpkin') {
+    c.strokeStyle = 'rgba(190,80,0,0.55)'; c.lineWidth = r * 0.07;
+    for (const k of [-0.5, 0, 0.5]) { c.beginPath(); c.ellipse(k * r, 0, r * 0.32, r * 0.98, 0, 0, TAU); c.stroke(); }
+  }
+  if (sk.id === 'snowman') { c.fillStyle = '#ff5d5d'; c.fillRect(-r * 1.2, r * 0.62, r * 2.4, r * 0.24); }
+  if (sk.id === 'dino') { c.fillStyle = '#8fe3cf'; c.beginPath(); c.ellipse(0, r * 0.62, r * 0.6, r * 0.42, 0, 0, TAU); c.fill(); }
   if (sk.id === 'kitty') {
     c.strokeStyle = 'rgba(150,70,20,0.5)'; c.lineWidth = r * 0.1;
     c.beginPath();
@@ -528,6 +657,14 @@ function drawCharacter(c, x, y, r, sk, o = {}) {
   if (sk.id === 'robot') {
     c.fillStyle = '#1b2433';
     c.beginPath(); c.roundRect(-r * 0.74, -r * 0.48, r * 1.48, r * 0.66, r * 0.22); c.fill();
+  }
+  if (sk.id === 'panda') {
+    c.fillStyle = COL.ink;
+    for (const s of [-1, 1]) { c.beginPath(); c.ellipse(s * ex, ey + r * 0.02, er * 1.45, er * 1.2, s * -0.5, 0, TAU); c.fill(); }
+  }
+  if (sk.id === 'owl') {
+    c.fillStyle = '#ffb347';
+    for (const s of [-1, 1]) { c.beginPath(); c.arc(s * ex, ey, er * 1.35, 0, TAU); c.fill(); }
   }
   if (mood === 'dead') {
     c.strokeStyle = sk.id === 'robot' ? '#5ef0ff' : COL.ink; c.lineWidth = r * 0.1;
@@ -575,6 +712,14 @@ function drawCharacter(c, x, y, r, sk, o = {}) {
     const open = mood === 'worried' ? r * 0.1 : 0;
     c.beginPath(); c.moveTo(-r * 0.18, r * 0.02); c.lineTo(r * 0.18, r * 0.02); c.lineTo(0, r * 0.2); c.closePath(); c.fill();
     if (open) { c.beginPath(); c.moveTo(-r * 0.14, r * 0.14 + open); c.lineTo(r * 0.14, r * 0.14 + open); c.lineTo(0, r * 0.28 + open); c.closePath(); c.fill(); }
+  } else if (sk.id === 'owl') {
+    c.fillStyle = '#ffa94d';
+    c.beginPath(); c.moveTo(-r * 0.13, r * 0.08); c.lineTo(r * 0.13, r * 0.08); c.lineTo(0, r * 0.3); c.closePath(); c.fill();
+  } else if (sk.id === 'snowman' && mood === 'happy') {
+    c.fillStyle = '#ff8c1a';
+    c.beginPath(); c.moveTo(0, r * 0.02); c.lineTo(r * 0.5, r * 0.12); c.lineTo(0, r * 0.2); c.closePath(); c.fill();
+    c.fillStyle = COL.ink;
+    for (let i = -2; i <= 2; i++) { c.beginPath(); c.arc(i * r * 0.12, r * 0.38 + Math.abs(i) * -r * 0.04, r * 0.05, 0, TAU); c.fill(); }
   } else if (sk.id === 'robot') {
     c.fillStyle = '#1b2433';
     const w = mood === 'worried' ? r * 0.3 : r * 0.6;
@@ -591,6 +736,10 @@ function drawCharacter(c, x, y, r, sk, o = {}) {
     c.beginPath(); c.arc(-r * 0.1, r * 0.24, r * 0.1, 0.1, Math.PI - 0.3); c.arc(r * 0.1, r * 0.24, r * 0.1, 0.3, Math.PI - 0.1); c.stroke();
   } else {
     c.beginPath(); c.arc(0, r * 0.2, r * 0.24, 0.15 * Math.PI, 0.85 * Math.PI); c.stroke();
+    if (sk.id === 'dino') {
+      c.fillStyle = '#ffffff';
+      for (const s of [-1, 1]) { c.beginPath(); c.moveTo(s * r * 0.16, r * 0.4); c.lineTo(s * r * 0.08, r * 0.4); c.lineTo(s * r * 0.12, r * 0.52); c.closePath(); c.fill(); }
+    }
   }
   if (sk.id === 'kitty') {
     c.strokeStyle = 'rgba(27,30,46,0.55)'; c.lineWidth = r * 0.05;
@@ -612,6 +761,63 @@ function drawCharacter(c, x, y, r, sk, o = {}) {
     for (const k of [0.25, 0.5, 0.72]) { c.moveTo(-r * 0.2 * (1 - k), -r * 0.85 * k + r * 0.04); c.lineTo(r * 0.2 * (1 - k), -r * 0.85 * k - r * 0.06); }
     c.stroke();
     c.restore();
+  }
+  if (sk.id === 'pumpkin') {
+    c.fillStyle = '#4caf50';
+    c.beginPath(); c.roundRect(-r * 0.1, -r * 1.22, r * 0.2, r * 0.36, r * 0.06); c.fill();
+  }
+  if (o.hat) drawHat(c, r, o.hat, sk.body === 'frog' ? -r * 0.98 : sk.body === 'robot' ? -r * 0.92 : -r * 0.86);
+  c.restore();
+}
+
+function drawHat(c, r, id, top) {
+  if (!id || id === 'none') return;
+  c.save();
+  c.translate(0, top);
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  if (id === 'cap') {
+    c.fillStyle = '#3d8bff'; c.beginPath(); c.arc(0, r * 0.14, r * 0.62, Math.PI, 0); c.closePath(); c.fill();
+    c.fillStyle = '#2457b8'; c.beginPath(); c.ellipse(r * 0.62, r * 0.12, r * 0.44, r * 0.12, 0, 0, TAU); c.fill();
+    c.fillStyle = '#ffffff'; c.beginPath(); c.arc(0, -r * 0.47, r * 0.08, 0, TAU); c.fill();
+  } else if (id === 'bow') {
+    c.translate(-r * 0.45, r * 0.1); c.rotate(-0.3);
+    c.fillStyle = '#ff6fb5';
+    for (const s of [-1, 1]) { c.beginPath(); c.moveTo(0, 0); c.lineTo(s * r * 0.44, -r * 0.27); c.lineTo(s * r * 0.44, r * 0.27); c.closePath(); c.fill(); }
+    c.fillStyle = '#b83d7a'; c.beginPath(); c.arc(0, 0, r * 0.12, 0, TAU); c.fill();
+  } else if (id === 'party') {
+    c.rotate(0.2);
+    c.fillStyle = '#ff9ad5'; c.beginPath(); c.moveTo(-r * 0.42, r * 0.12); c.lineTo(r * 0.42, r * 0.12); c.lineTo(0, -r * 0.95); c.closePath(); c.fill();
+    c.strokeStyle = COL.gold; c.lineWidth = r * 0.1;
+    c.beginPath(); c.moveTo(-r * 0.27, -r * 0.24); c.lineTo(r * 0.27, -r * 0.24); c.moveTo(-r * 0.13, -r * 0.6); c.lineTo(r * 0.13, -r * 0.6); c.stroke();
+    c.fillStyle = COL.gold; c.beginPath(); c.arc(0, -r * 0.98, r * 0.14, 0, TAU); c.fill();
+  } else if (id === 'flower') {
+    c.translate(r * 0.45, r * 0.1);
+    c.fillStyle = '#ffffff';
+    for (let i = 0; i < 6; i++) { const a = (i * TAU) / 6; c.beginPath(); c.ellipse(Math.cos(a) * r * 0.2, Math.sin(a) * r * 0.2, r * 0.15, r * 0.09, a, 0, TAU); c.fill(); }
+    c.fillStyle = COL.gold; c.beginPath(); c.arc(0, 0, r * 0.13, 0, TAU); c.fill();
+  } else if (id === 'beanie') {
+    c.fillStyle = '#ff5d5d'; c.beginPath(); c.arc(0, r * 0.16, r * 0.68, Math.PI, 0); c.closePath(); c.fill();
+    c.fillStyle = '#f4f5fb';
+    c.beginPath(); c.roundRect(-r * 0.72, r * 0.02, r * 1.44, r * 0.24, r * 0.1); c.fill();
+    c.beginPath(); c.arc(0, -r * 0.55, r * 0.18, 0, TAU); c.fill();
+  } else if (id === 'cowboy') {
+    c.fillStyle = '#9c6b3f'; c.beginPath(); c.ellipse(0, r * 0.12, r * 1.05, r * 0.2, 0, 0, TAU); c.fill();
+    c.fillStyle = '#b8824f';
+    c.beginPath(); c.moveTo(-r * 0.5, r * 0.1);
+    c.quadraticCurveTo(-r * 0.56, -r * 0.55, -r * 0.15, -r * 0.5); c.quadraticCurveTo(0, -r * 0.38, r * 0.15, -r * 0.5);
+    c.quadraticCurveTo(r * 0.56, -r * 0.55, r * 0.5, r * 0.1); c.closePath(); c.fill();
+    c.fillStyle = '#6b4423'; c.fillRect(-r * 0.5, -r * 0.06, r * 1.0, r * 0.12);
+  } else if (id === 'tophat') {
+    c.fillStyle = '#2a2d3e'; c.strokeStyle = 'rgba(255,255,255,0.3)'; c.lineWidth = r * 0.04;
+    c.beginPath(); c.ellipse(0, r * 0.12, r * 0.78, r * 0.16, 0, 0, TAU); c.fill(); c.stroke();
+    c.beginPath(); c.rect(-r * 0.45, -r * 0.75, r * 0.9, r * 0.86); c.fill(); c.stroke();
+    c.fillStyle = '#ff5d5d'; c.fillRect(-r * 0.45, -r * 0.1, r * 0.9, r * 0.16);
+  } else if (id === 'crown') {
+    c.fillStyle = COL.gold; c.strokeStyle = COL.goldDark; c.lineWidth = r * 0.05;
+    c.beginPath(); c.moveTo(-r * 0.55, r * 0.14); c.lineTo(-r * 0.55, -r * 0.36); c.lineTo(-r * 0.28, -r * 0.06); c.lineTo(0, -r * 0.52);
+    c.lineTo(r * 0.28, -r * 0.06); c.lineTo(r * 0.55, -r * 0.36); c.lineTo(r * 0.55, r * 0.14); c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = '#ff5d5d'; c.beginPath(); c.arc(0, r * 0.0, r * 0.08, 0, TAU); c.fill();
+    c.fillStyle = '#3d8bff'; c.beginPath(); c.arc(-r * 0.33, r * 0.02, r * 0.06, 0, TAU); c.arc(r * 0.33, r * 0.02, r * 0.06, 0, TAU); c.fill();
   }
   c.restore();
 }
@@ -641,54 +847,56 @@ function drawBubble(x, y, R, t, small = false) {
   ctx.restore();
 }
 
-function drawTrail(sk) {
-  const h = player.hist;
+function drawTrail(c, sk, h, y, r, step) {
   if (h.length < 3) return;
-  const step = 7 * S;
   if (sk.trail === 'rainbow') {
-    const sw = (player.r * 1.3) / RAINBOW.length;
-    ctx.lineWidth = sw + 0.5; ctx.lineCap = 'butt';
+    const sw = (r * 1.3) / RAINBOW.length;
+    c.lineWidth = sw + 0.5; c.lineCap = 'butt';
     for (let i = 1; i < h.length; i++) {
-      ctx.globalAlpha = 0.85 * (1 - i / h.length);
+      c.globalAlpha = 0.85 * (1 - i / h.length);
       RAINBOW.forEach((col, k) => {
         const off = (k - (RAINBOW.length - 1) / 2) * sw;
-        ctx.strokeStyle = col;
-        ctx.beginPath(); ctx.moveTo(h[i - 1] + off, player.y + (i - 1) * step); ctx.lineTo(h[i] + off, player.y + i * step); ctx.stroke();
+        c.strokeStyle = col;
+        c.beginPath(); c.moveTo(h[i - 1] + off, y + (i - 1) * step); c.lineTo(h[i] + off, y + i * step); c.stroke();
       });
     }
-    ctx.globalAlpha = 1;
+    c.globalAlpha = 1;
   } else if (sk.trail === 'ghost') {
     for (const i of [12, 8, 4]) {
-      if (h[i] !== undefined) drawCharacter(ctx, h[i], player.y + i * step, player.r, sk, { alpha: 0.3 * (1 - i / 16) });
+      if (h[i] !== undefined) drawCharacter(c, h[i], y + i * step, r, sk, { alpha: 0.3 * (1 - i / 16) });
     }
   }
 }
 
-function emitTrail(sk) {
-  const r = player.r;
+function emitTrail(sk, x, y, r, vx, list, k = S) {
   if (sk.trail === 'fire') {
     for (let i = 0; i < 2; i++) {
-      particles.push({ x: player.x + rand(-0.5, 0.5) * r, y: player.y + r * 0.5, vx: rand(-20, 20) * S, vy: rand(80, 160) * S,
-                       life: rand(0.25, 0.45), max: 0.45, size: rand(7, 13) * S, grav: 0, back: true, round: true,
-                       color: ['#5ec8ff', '#b5ecff', '#3f8cff'][(Math.random() * 3) | 0] });
+      list.push({ x: x + rand(-0.5, 0.5) * r, y: y + r * 0.5, vx: rand(-20, 20) * k, vy: rand(80, 160) * k,
+                  life: rand(0.25, 0.45), max: 0.45, size: rand(7, 13) * k, grav: 0, back: true, round: true,
+                  color: ['#5ec8ff', '#b5ecff', '#3f8cff'][(Math.random() * 3) | 0] });
     }
-  } else if (sk.trail === 'spark' && Math.abs(player.vx) > 120 * S) {
-    particles.push({ x: player.x - Math.sign(player.vx) * r, y: player.y + rand(-0.4, 0.4) * r,
-                     vx: -player.vx * 0.2 + rand(-40, 40) * S, vy: rand(-80, 40) * S, life: 0.35, max: 0.35,
-                     size: rand(3, 6) * S, grav: 400, back: true, color: Math.random() < 0.5 ? '#5ef0ff' : COL.gold });
+  } else if (sk.trail === 'spark' && Math.abs(vx) > 120 * k) {
+    list.push({ x: x - Math.sign(vx) * r, y: y + rand(-0.4, 0.4) * r,
+                vx: -vx * 0.2 + rand(-40, 40) * k, vy: rand(-80, 40) * k, life: 0.35, max: 0.35,
+                size: rand(3, 6) * k, grav: 400, back: true, color: Math.random() < 0.5 ? '#5ef0ff' : COL.gold });
   }
 }
 
-function drawParticles(back) {
-  for (const p of particles) {
+function stepParticles(list, dt) {
+  for (const p of list) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.97; p.vy = p.vy * 0.97 + p.grav * dt; p.life -= dt; }
+  return list.filter(p => p.life > 0);
+}
+
+function drawParticles(back, c = ctx, list = particles) {
+  for (const p of list) {
     if (!!p.back !== back) continue;
     const k = clamp(p.life / p.max, 0, 1);
-    ctx.globalAlpha = k;
-    ctx.fillStyle = p.color;
-    if (p.round) { ctx.beginPath(); ctx.arc(p.x, p.y, (p.size * (0.4 + 0.6 * k)) / 2, 0, TAU); ctx.fill(); }
-    else ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+    c.globalAlpha = k;
+    c.fillStyle = p.color;
+    if (p.round) { c.beginPath(); c.arc(p.x, p.y, (p.size * (0.4 + 0.6 * k)) / 2, 0, TAU); c.fill(); }
+    else c.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
   }
-  ctx.globalAlpha = 1;
+  c.globalAlpha = 1;
 }
 
 function drawCoin(c, x, y, r, spin) {
@@ -711,6 +919,13 @@ function shapePoints(shape, s) {
     case 'diamond':  return [[0, -s * 1.2], [s * 0.85, 0], [0, s * 1.2], [-s * 0.85, 0]];
     case 'star':     return ring(10, i => (i % 2 ? s * 0.5 : s * 1.1), -Math.PI / 2);
     case 'hexagon':  return ring(6, () => s, 0);
+    case 'snowflake': return ring(12, i => (i % 2 ? s * 0.3 : s * 1.1), -Math.PI / 2);
+    case 'moon': {
+      // a crescent: the outer circle's left side, then back along a smaller circle offset to the right
+      const out = Array.from({ length: 11 }, (_, i) => { const a = ((60 + i * 24) * Math.PI) / 180; return [Math.cos(a) * s, Math.sin(a) * s]; });
+      const inn = Array.from({ length: 9 }, (_, i) => { const a = ((263.4 - i * 20.85) * Math.PI) / 180; return [s * 0.6 + Math.cos(a) * s * 0.872, Math.sin(a) * s * 0.872]; });
+      return out.concat(inn);
+    }
     case 'bolt':     return [[0.2, -1.1], [-0.55, 0.1], [-0.05, 0.1], [-0.25, 1.1], [0.6, -0.15], [0.1, -0.15]].map(([x, y]) => [x * s, y * s]);
     case 'plus': {
       const a = s * 0.38;
@@ -737,7 +952,7 @@ function drawShape(c, cx, cy, s, angle, L, colors) {
   };
   pass(s * 0.14, dark);
   pass(0, main);
-  const k = L.shape === 'star' || L.shape === 'bolt' ? 0.5 : 1;
+  const k = ['star', 'bolt', 'snowflake', 'moon'].includes(L.shape) ? 0.5 : 1;
   c.save();
   c.translate(cx, cy); c.rotate(angle);
   c.fillStyle = 'rgba(255,255,255,0.28)';
@@ -808,9 +1023,11 @@ function coinTarget() {
   return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
 }
 function giveCoin(x, y) {
-  save.coins++; g.runCoins++;
+  const v = coinValue();
+  save.coins += v; g.runCoins += v; save.stats.coins += v;
   const t = coinTarget();
-  flyers.push({ x0: x, y0: y, x1: t.x, y1: t.y, t: 0, dur: 0.45 });
+  flyers.push({ x0: x, y0: y, x1: t.x, y1: t.y, t: 0, dur: 0.45, v });
+  return v;
 }
 
 // Distance from the character's edge to the shape's edge (negative = overlapping), using the drawn outline.
@@ -831,9 +1048,11 @@ function shapeGap(b) {
 
 function onPass(b) {
   g.score++;
+  save.stats.dodged++;
   hudScore();
   if (b.minGap < 14 * S) {
     addPopup('Close!', player.x, player.y - player.r * 2.2, '#9fdcff', 24);
+    save.stats.close++;
     giveCoin(player.x, player.y - player.r);
     sfx.close();
   }
@@ -881,6 +1100,8 @@ function endGame() {
   const isBest = g.score > g.startBest;
   save.bests[g.level] = Math.max(save.bests[g.level], g.score);
   save.tutorialDone = save.tutorialDone || g.score >= 3;
+  save.stats.games++;
+  save.stats.time += g.time;
   persist();
   shownCoins = save.coins;
   $('overBest').innerHTML = isBest && g.score > 0
@@ -907,7 +1128,8 @@ function endGame() {
 
 function canAffordSomething() {
   return UPGRADES.some(u => save.up[u.id] < u.costs.length && save.coins >= u.costs[save.up[u.id]])
-      || SKINS.some(k => !save.skins.includes(k.id) && save.coins >= k.cost);
+      || SKINS.some(k => !save.skins.includes(k.id) && save.coins >= k.cost)
+      || HATS.some(k => !save.hats.includes(k.id) && save.coins >= k.cost);
 }
 
 function countUp(el, to, ms) {
@@ -931,8 +1153,10 @@ function hudGoal() {
 function hudShields() { $('hudShields').textContent = g.shields > 0 ? `Shields: ${g.shields}` : ''; }
 
 // ---------- Update ----------
+let lastDt = 1 / 60;
 function update(dt) {
   clock += dt;
+  lastDt = dt;
   const starSpeed = g && (state === 'play' || state === 'dying') ? speed() * 0.25 : 30;
   for (const s of stars) { s.y += (starSpeed * s.z * dt) / H; if (s.y > 1) { s.y = 0; s.x = Math.random(); } }
 
@@ -943,8 +1167,7 @@ function update(dt) {
 
   if (state === 'play' || state === 'dying') stepGame(dt);
 
-  for (const p of particles) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.97; p.vy = p.vy * 0.97 + p.grav * dt; p.life -= dt; }
-  particles = particles.filter(p => p.life > 0);
+  particles = stepParticles(particles, dt);
   for (const p of popups) { p.y -= 40 * S * dt; p.life -= dt; }
   popups = popups.filter(p => p.life > 0);
   for (const r of rings) r.life -= dt;
@@ -952,7 +1175,7 @@ function update(dt) {
   for (const f of flyers) {
     f.t += dt;
     if (f.t >= f.dur && !f.done) {
-      f.done = true; shownCoins++; hudCoins(); bump($('hudCoinIcon'));
+      f.done = true; shownCoins += f.v; hudCoins(); bump($('hudCoinIcon'));
     }
   }
   flyers = flyers.filter(f => !f.done);
@@ -976,13 +1199,13 @@ function stepGame(dt) {
     player.vx = (player.x - prev) / Math.max(dt, 1e-3);
     player.hist.unshift(player.x);
     if (player.hist.length > 16) player.hist.pop();
-    emitTrail(skin());
+    emitTrail(skin(), player.x, player.y, player.r, player.vx, particles);
 
     g.spawnT -= dt;
     if (g.spawnT <= 0) {
       const size = rand(34, 62) * S * g.L.size;
       g.blocks.push({ x: rand(0, W - size), y: -size, w: size, h: size, vy: speed() * rand(0.85, 1.15),
-                      wob: rand(0, TAU), wobS: rand(1, 2.5), angle: 0, spin: g.L.shape === 'star' || g.L.shape === 'plus' ? rand(-1.6, 1.6) : 0,
+                      wob: rand(0, TAU), wobS: rand(1, 2.5), angle: 0, spin: ['star', 'plus', 'snowflake'].includes(g.L.shape) ? rand(-1.6, 1.6) : 0,
                       minGap: Infinity, passed: false });
       g.spawnT = spawnEvery();
     }
@@ -1022,9 +1245,9 @@ function stepGame(dt) {
     if (playing && range && d < range) { c.x += (dx / d) * 520 * S * dt; c.y += (dy / d) * 520 * S * dt; }
     if (playing && d < player.r + c.r) {
       c.got = true;
-      giveCoin(c.x, c.y);
+      const v = giveCoin(c.x, c.y);
       burst(c.x, c.y, 10, [COL.gold, '#fff3b0'], 180);
-      addPopup('+1', c.x, c.y - 20 * S, COL.gold, 24, 0.7);
+      addPopup('+' + v, c.x, c.y - 20 * S, COL.gold, 24, 0.7);
       sfx.coin(); vibrate(10);
     }
   }
@@ -1061,8 +1284,8 @@ function draw() {
       // soft shadow so the character always stands out
       ctx.fillStyle = 'rgba(0,0,0,0.3)';
       ctx.beginPath(); ctx.ellipse(player.x, player.y + player.r * 1.15, player.r * 0.8, player.r * 0.22, 0, 0, TAU); ctx.fill();
-      drawTrail(skin());
-      drawCharacter(ctx, player.x, player.y, player.r, skin(), {
+      drawTrail(ctx, skin(), player.hist, player.y, player.r, 7 * S);
+      drawCharacter(ctx, player.x, player.y, player.r, skin(), { hat: save.hat,
         sx: 1 + player.st, sy: 1 - player.st * 0.6,
         lookX: player.lookX, lookY: player.lookY, blink: player.blink > 0,
         mood: player.mood, alpha: g.invuln > 0 ? 0.55 + 0.25 * Math.sin(clock * 8) : 1,
@@ -1116,7 +1339,7 @@ function draw() {
   if (flash > 0) { ctx.fillStyle = `rgba(255,255,255,${flash})`; ctx.fillRect(0, 0, W, H); }
 
   if (state === 'menu') drawMenuChar();
-  if (state === 'shop' && !reducedMotion) drawPreviews();
+  if (state === 'shop') drawShopPreview(lastDt);
 }
 
 const mctx = $('menuChar').getContext('2d');
@@ -1125,11 +1348,11 @@ function drawMenuChar() {
   const bob = reducedMotion ? 0 : Math.sin(clock * 2.2) * 10;
   mctx.fillStyle = 'rgba(0,0,0,0.3)';
   mctx.beginPath(); mctx.ellipse(150, 250, 60 - bob, 12, 0, 0, TAU); mctx.fill();
-  drawCharacter(mctx, 150, 150 + bob, 80, skin(), { lookX: Math.sin(clock * 0.7), lookY: Math.sin(clock * 0.5) * 0.4, blink: player.blink > 0 });
+  drawCharacter(mctx, 150, 158 + bob, 74, skin(), { hat: save.hat, lookX: Math.sin(clock * 0.7), lookY: Math.sin(clock * 0.5) * 0.4, blink: player.blink > 0 });
 }
 
 // ---------- Screens ----------
-const SCREENS = ['menu', 'over', 'paused', 'shop', 'settings'];
+const SCREENS = ['menu', 'over', 'paused', 'shop', 'settings', 'stats'];
 let shopReturn = 'menu';
 function showScreen(name) {
   for (const s of SCREENS) $(s).classList.toggle('show', s === name);
@@ -1137,77 +1360,134 @@ function showScreen(name) {
   if (name === 'menu') { $('menuCoins').textContent = save.coins; renderLevels(); setBg(save.level); }
   if (name === 'shop') renderShop();
   if (name === 'settings') renderSettings();
+  if (name === 'stats') renderStats();
   const f = $(name).querySelector('[data-autofocus]');
   if (f) f.focus({ preventScroll: true });
 }
 function go(name) {
-  if (name === 'shop' || name === 'settings') shopReturn = state === 'over' ? 'over' : 'menu';
+  if (name === 'shop' || name === 'settings' || name === 'stats') shopReturn = state === 'over' ? 'over' : 'menu';
   state = name;
   showScreen(name);
 }
 
 function renderLevels() {
   $('levelList').innerHTML = LEVELS.map((L, i) => {
-    const icon = `<canvas class="level-icon" width="112" height="112" data-icon="${i}" aria-hidden="true"></canvas>`;
-    const name = `<span class="level-name">${L.name} ${L.noun}</span>`;
+    const icon = `<canvas class="level-icon" width="104" height="104" data-icon="${i}" aria-hidden="true"></canvas>`;
+    const name = `<span class="level-name">${L.name}</span><span class="level-noun">${L.noun}</span>`;
     if (!isUnlocked(i)) {
-      return `<button class="level-btn" disabled>${icon}<span class="level-text">${name}
-        <span class="level-sub">Get ${UNLOCK_SCORE} on ${LEVELS[i - 1].name} to unlock</span></span>
-        <span class="lock" aria-label="Locked"></span></button>`;
+      return `<button class="level-tile" disabled aria-label="${L.name} ${L.noun}, locked. Get ${UNLOCK_SCORE} on ${LEVELS[i - 1].name} to unlock">
+        <span class="lock" aria-hidden="true"></span>${icon}${name}
+        <span class="level-sub">${UNLOCK_SCORE} on ${LEVELS[i - 1].name}</span></button>`;
     }
     const cur = i === save.level;
-    const best = save.bests[i] ? `Best: ${save.bests[i]}` : 'Not played yet';
+    const best = save.bests[i] ? `Best ${save.bests[i]}` : 'New level';
     const fresh = i > 0 && !save.played[i] ? '<span class="new-tag">New!</span>' : '';
-    return `<button class="level-btn${cur ? ' current' : ''}" data-level="${i}"${cur ? ' data-autofocus' : ''}>${icon}
-      <span class="level-text">${name}<span class="level-sub">${fresh}${best}</span></span>
-      <span class="level-go">Play</span></button>`;
+    return `<button class="level-tile${cur ? ' current' : ''}" data-level="${i}"${cur ? ' data-autofocus' : ''}
+      aria-label="Play ${L.name} ${L.noun}. ${best}">${fresh}${icon}${name}<span class="level-sub">${best}</span></button>`;
   }).join('');
   for (const cv of document.querySelectorAll('[data-icon]')) {
     const i = +cv.dataset.icon;
-    drawShape(cv.getContext('2d'), 56, 52, 30, 0, LEVELS[i], isUnlocked(i) ? null : ['#59607f', '#363c5c']);
+    drawShape(cv.getContext('2d'), 52, 50, 28, 0, LEVELS[i], isUnlocked(i) ? null : ['#59607f', '#363c5c']);
   }
 }
 
+let shopTab = 'chars';
+const shopSel = { chars: null, hats: null };
+const pv = { x: 0, vx: 0, hist: [], parts: [] };
+
 function renderShop() {
+  shopSel.chars = shopSel.chars || save.skin;
+  shopSel.hats = shopSel.hats || save.hat;
   $('shopCoins').textContent = save.coins;
-  $('upgradeList').innerHTML = UPGRADES.map(u => {
-    const lvl = save.up[u.id], max = u.costs.length, cost = u.costs[lvl];
-    const pips = u.costs.map((_, i) => `<span class="pip${i < lvl ? ' on' : ''}"></span>`).join('');
-    let btn;
-    if (lvl >= max) btn = `<button class="btn" disabled>All levels bought</button>`;
-    else if (save.coins >= cost) btn = `<button class="btn btn-buy" data-up="${u.id}">Buy for ${cost} coins</button>`;
-    else btn = `<button class="btn" disabled>Costs ${cost} &middot; need ${cost - save.coins} more</button>`;
-    return `<div class="card" id="card-${u.id}">
-      <div class="card-head"><span class="card-name">${u.name}</span><span class="level">Level ${lvl} of ${max}</span></div>
-      <div class="pips" aria-hidden="true">${pips}</div>
-      <p>${u.desc}</p>${btn}</div>`;
-  }).join('');
-  $('skinList').innerHTML = SKINS.map(k => {
-    const owned = save.skins.includes(k.id), wearing = save.skin === k.id;
-    let btn;
-    if (wearing) btn = `<span class="wearing-label">Wearing</span>`;
-    else if (owned) btn = `<button class="btn" data-wear="${k.id}">Wear</button>`;
-    else if (save.coins >= k.cost) btn = `<button class="btn btn-buy" data-skin="${k.id}">Buy &middot; ${k.cost}</button>`;
-    else btn = `<button class="btn" disabled>${k.cost} coins</button>`;
-    return `<div class="card skin${wearing ? ' wearing' : ''}${k.rarity === 3 ? ' legendary' : ''}" id="skin-${k.id}">
-      <span class="rarity r${k.rarity}">${RARITY[k.rarity]}</span>
-      <canvas width="144" height="144" data-preview="${k.id}" aria-hidden="true"></canvas>
-      <span class="card-name">${k.name}</span>
-      ${k.perk ? `<span class="perk">${k.perk}</span>` : ''}${btn}</div>`;
-  }).join('');
-  previews = [...document.querySelectorAll('[data-preview]')].map(cv => ({ c: cv.getContext('2d'), sk: SKINS.find(k => k.id === cv.dataset.preview) }));
-  drawPreviews();
+  for (const t of document.querySelectorAll('[data-tab]')) t.setAttribute('aria-selected', t.dataset.tab === shopTab);
+  const box = $('shopItems');
+  if (shopTab === 'ups') {
+    box.className = 'shop-items list';
+    box.innerHTML = UPGRADES.map(u => {
+      const lvl = save.up[u.id], max = u.costs.length, cost = u.costs[lvl];
+      const pips = u.costs.map((_, i) => `<span class="pip${i < lvl ? ' on' : ''}"></span>`).join('');
+      let btn;
+      if (lvl >= max) btn = `<button class="btn" disabled>All levels bought</button>`;
+      else if (save.coins >= cost) btn = `<button class="btn btn-buy" data-up="${u.id}">Buy for ${cost} coins</button>`;
+      else btn = `<button class="btn" disabled>Costs ${cost} &middot; need ${cost - save.coins} more</button>`;
+      return `<div class="card" id="card-${u.id}">
+        <div class="card-head"><span class="card-name">${u.name}</span><span class="level">Level ${lvl} of ${max}</span></div>
+        <div class="pips" aria-hidden="true">${pips}</div><p>${u.desc}</p>${btn}</div>`;
+    }).join('');
+  } else {
+    const hats = shopTab === 'hats', list = hats ? HATS : SKINS, owned = hats ? save.hats : save.skins;
+    const worn = hats ? save.hat : save.skin, sel = shopSel[shopTab];
+    box.className = 'shop-items grid';
+    box.innerHTML = [...list].sort((a, b) => a.cost - b.cost).map(k => {
+      const have = owned.includes(k.id), on = worn === k.id;
+      const tag = on ? '<span class="item-tag on">Wearing</span>' : have ? `<span class="item-tag">${k.id === 'none' ? 'No hat' : 'Owned'}</span>`
+        : `<span class="item-tag price"><span class="coin-icon small"></span>${k.cost}</span>`;
+      return `<button class="item${k.id === sel ? ' sel' : ''}" data-pick="${k.id}" aria-pressed="${k.id === sel}"
+        aria-label="${k.name}, ${on ? 'wearing' : have ? 'owned' : k.cost + ' coins'}">
+        <canvas width="112" height="112" data-item="${k.id}" aria-hidden="true"></canvas>${tag}</button>`;
+    }).join('');
+    for (const cv of box.querySelectorAll('[data-item]')) {
+      const c = cv.getContext('2d'), id = cv.dataset.item;
+      if (hats) {
+        if (id === 'none') {
+          c.strokeStyle = '#7d86ab'; c.lineWidth = 6;
+          c.beginPath(); c.arc(56, 56, 26, 0, TAU); c.moveTo(38, 74); c.lineTo(74, 38); c.stroke();
+        } else {
+          // bow and flower sit off to the side on a head, so pull them back to the middle here
+          const r = 54, dx = id === 'bow' ? r * 0.45 : id === 'flower' ? -r * 0.45 : 0;
+          c.translate(56 + dx, 0); drawHat(c, r, id, 78);
+        }
+      } else drawCharacter(c, 56, 62, 36, SKINS.find(k => k.id === id), { t: 0 });
+    }
+  }
+  renderShopAction();
 }
 
-let previews = [];
-function drawPreviews() {
-  previews.forEach(({ c, sk }, i) => {
-    c.clearRect(0, 0, 144, 144);
-    drawCharacter(c, 72, 84, 44, sk, {
-      lookX: reducedMotion ? 0 : Math.sin(clock * 0.8 + i), lookY: 0,
-      blink: !reducedMotion && (clock * 0.4 + i * 0.37) % 1 < 0.04,
-    });
-  });
+function renderShopAction() {
+  const btn = $('shopAction');
+  const tag = $('previewTag'), perk = $('previewPerk');
+  if (shopTab === 'ups') {
+    btn.hidden = true;
+    $('previewName').textContent = 'Your character';
+    tag.textContent = ''; perk.textContent = '';
+    return;
+  }
+  const hats = shopTab === 'hats', list = hats ? HATS : SKINS, owned = hats ? save.hats : save.skins;
+  const item = list.find(k => k.id === shopSel[shopTab]);
+  const have = owned.includes(item.id), on = (hats ? save.hat : save.skin) === item.id;
+  $('previewName').textContent = item.name;
+  tag.textContent = hats ? '' : RARITY[item.rarity];
+  tag.className = hats ? 'rarity' : `rarity r${item.rarity}`;
+  perk.textContent = item.perk || '';
+  btn.hidden = false;
+  btn.disabled = on || (!have && save.coins < item.cost);
+  btn.className = 'btn' + (!have && save.coins >= item.cost ? ' btn-buy' : on ? '' : have ? ' btn-primary' : '');
+  btn.textContent = on ? 'Wearing' : have ? 'Wear' : save.coins >= item.cost ? `Buy for ${item.cost} coins`
+    : `Need ${item.cost - save.coins} more coins`;
+}
+
+function drawShopPreview(dt) {
+  const cv = $('shopPreview');
+  const w = cv.clientWidth, h = cv.clientHeight;
+  if (!w) return;
+  if (cv.width !== Math.round(w * DPR)) { cv.width = Math.round(w * DPR); cv.height = Math.round(h * DPR); }
+  const c = cv.getContext('2d');
+  c.setTransform(DPR, 0, 0, DPR, 0, 0);
+  c.clearRect(0, 0, w, h);
+  const sk = SKINS.find(k => k.id === (shopTab === 'chars' ? shopSel.chars : save.skin)) || skin();
+  const hat = shopTab === 'hats' ? shopSel.hats : save.hat;
+  const r = Math.min(40, h * 0.26), y = h * 0.46;
+  const nx = w / 2 + (reducedMotion ? 0 : Math.sin(clock * 1.3) * w * 0.26);
+  pv.vx = (nx - (pv.x || nx)) / Math.max(dt, 1e-3); pv.x = nx;
+  pv.hist.unshift(pv.x); if (pv.hist.length > 16) pv.hist.pop();
+  emitTrail(sk, pv.x, y, r, pv.vx, pv.parts, 1);
+  pv.parts = stepParticles(pv.parts, dt);
+  drawParticles(true, c, pv.parts);
+  c.fillStyle = 'rgba(0,0,0,0.3)';
+  c.beginPath(); c.ellipse(pv.x, y + r * 1.15, r * 0.8, r * 0.22, 0, 0, TAU); c.fill();
+  drawTrail(c, sk, pv.hist, y, r, 6);
+  drawCharacter(c, pv.x, y, r, sk, { hat, lookX: clamp(pv.vx / 300, -1, 1), blink: player.blink > 0 });
+  drawParticles(false, c, pv.parts);
 }
 
 function flashCard(id) { const el = $(id); if (el) { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); } }
@@ -1215,22 +1495,51 @@ function flashCard(id) { const el = $(id); if (el) { el.classList.remove('flash'
 $('shop').addEventListener('click', e => {
   const b = e.target.closest('button');
   if (!b) return;
-  if (b.dataset.up) {
+  if (b.dataset.tab) {
+    shopTab = b.dataset.tab; sfx.click();
+    renderShop();
+  } else if (b.dataset.pick) {
+    shopSel[shopTab] = b.dataset.pick; sfx.click();
+    for (const it of document.querySelectorAll('[data-pick]')) {
+      it.classList.toggle('sel', it === b); it.setAttribute('aria-pressed', it === b);
+    }
+    renderShopAction();
+  } else if (b.id === 'shopAction') {
+    const hats = shopTab === 'hats', list = hats ? HATS : SKINS, owned = hats ? save.hats : save.skins;
+    const item = list.find(k => k.id === shopSel[shopTab]);
+    if (!owned.includes(item.id)) {
+      if (save.coins < item.cost) return;
+      save.coins -= item.cost; owned.push(item.id); sfx.buy(); vibrate(30);
+      burst(W / 2, H * 0.25, 30, [COL.gold, '#ffffff', '#ff9ad5', '#5ec8ff'], 300, 300);
+    } else sfx.click();
+    if (hats) save.hat = item.id; else save.skin = item.id;
+    persist(); renderShop();
+  } else if (b.dataset.up) {
     const u = UPGRADES.find(x => x.id === b.dataset.up), cost = u.costs[save.up[u.id]];
     if (save.coins < cost) return;
     save.coins -= cost; save.up[u.id]++; persist(); sfx.buy(); vibrate(30);
     renderShop(); flashCard('card-' + u.id);
     $('card-' + u.id).querySelector('button:not([disabled])')?.focus({ preventScroll: true });
-  } else if (b.dataset.skin) {
-    const k = SKINS.find(x => x.id === b.dataset.skin);
-    if (save.coins < k.cost) return;
-    save.coins -= k.cost; save.skins.push(k.id); save.skin = k.id; persist(); sfx.buy(); vibrate(30);
-    renderShop(); flashCard('skin-' + k.id);
-  } else if (b.dataset.wear) {
-    save.skin = b.dataset.wear; persist(); sfx.click();
-    renderShop(); flashCard('skin-' + save.skin);
   }
 });
+
+function renderStats() {
+  const st = save.stats, mins = Math.round(st.time / 60);
+  const time = mins >= 60 ? `${Math.floor(mins / 60)} h ${mins % 60} min` : `${mins} min`;
+  const top = Math.max(...save.bests), topLevel = LEVELS[save.bests.indexOf(top)];
+  const rows = [
+    ['Games played', st.games],
+    ['Shapes dodged', st.dodged],
+    ['Close calls', st.close],
+    ['Coins earned', st.coins],
+    ['Time played', time],
+    ['Best score', top ? `${top} on ${topLevel.name}` : 'None yet'],
+    ['Levels unlocked', `${LEVELS.filter((_, i) => isUnlocked(i)).length} of ${LEVELS.length}`],
+    ['Characters', `${save.skins.length} of ${SKINS.length}`],
+    ['Hats', `${save.hats.length - 1} of ${HATS.length - 1}`],
+  ];
+  $('statsList').innerHTML = rows.map(([k, v]) => `<div class="stat"><dt>${k}</dt><dd>${v}</dd></div>`).join('');
+}
 
 function renderSettings() {
   for (const sw of document.querySelectorAll('[data-setting]')) {
@@ -1246,6 +1555,7 @@ $('settings').addEventListener('click', e => {
   save.settings[k] = !save.settings[k];
   persist(); renderSettings();
   if (k === 'sound') { ensureAudio(); sfx.click(); }
+  if (k === 'music') ensureAudio();
   if (k === 'vibe') vibrate(40);
   if (k === 'shake' && save.settings.shake) { shake = 8; }
 });
@@ -1270,7 +1580,7 @@ document.addEventListener('click', e => {
   const act = b.dataset.act;
   if (act === 'play') startGame();
   else if (act === 'play-next') startGame(+b.dataset.next);
-  else if (act === 'shop' || act === 'settings') go(act);
+  else if (act === 'shop' || act === 'settings' || act === 'stats') go(act);
   else if (act === 'menu') go('menu');
   else if (act === 'back') { state = shopReturn; showScreen(shopReturn); if (shopReturn === 'over') $('overHint').hidden = !canAffordSomething(); }
   else if (act === 'resume') resume();
@@ -1302,7 +1612,7 @@ window.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     if (state === 'play') pause();
     else if (state === 'paused') resume();
-    else if (state === 'shop' || state === 'settings') { state = shopReturn; showScreen(shopReturn); }
+    else if (['shop', 'settings', 'stats'].includes(state)) { state = shopReturn; showScreen(shopReturn); }
   }
 });
 window.addEventListener('keyup', e => {
