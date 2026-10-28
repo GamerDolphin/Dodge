@@ -7,6 +7,9 @@
 <meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Dodge</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
@@ -197,6 +200,15 @@
   .item-tag.price { color: var(--text); }
   .coin-icon.small { width: 14px; height: 14px; box-shadow: inset 0 0 0 1.5px #c99400; }
   #shopAction { flex: none; min-height: 60px; }
+  /* save code */
+  .code-label { font-size: var(--text-sm); font-weight: 600; color: var(--text-muted); }
+  .code-box { width: 100%; min-height: 72px; padding: var(--space-3); border: 2px solid #7d86ab; border-radius: var(--radius-sm);
+              background: var(--bg); color: var(--text); font: 500 var(--text-sm) / 1.4 ui-monospace, monospace; resize: vertical;
+              user-select: text; -webkit-user-select: text; touch-action: manipulation; word-break: break-all; }
+  .code-box:focus-visible { outline: var(--focus); outline-offset: 2px; }
+  .code-msg { min-height: 1.4em; font-weight: 600; }
+  .code-msg.ok { color: var(--good); }
+  .code-msg.bad { color: #ff8a8a; }
   /* stats */
   .stats { margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
   .stat { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); background: var(--surface); border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); }
@@ -323,7 +335,7 @@
   </div>
 </section>
 
-<section id="settings" class="screen">
+<section id="settings" class="screen scroll">
   <div class="panel">
     <div class="top-bar">
       <button class="btn back-btn" data-act="back" data-autofocus>&larr; Back</button>
@@ -333,6 +345,15 @@
     <div class="setting"><span id="lblSound">Sound effects</span><span class="switch-wrap"><span class="switch-text" data-for="sound"></span><button class="switch" role="switch" aria-labelledby="lblSound" data-setting="sound"></button></span></div>
     <div class="setting"><span id="lblVibe">Vibration</span><span class="switch-wrap"><span class="switch-text" data-for="vibe"></span><button class="switch" role="switch" aria-labelledby="lblVibe" data-setting="vibe"></button></span></div>
     <div class="setting"><span id="lblShake">Screen shake</span><span class="switch-wrap"><span class="switch-text" data-for="shake"></span><button class="switch" role="switch" aria-labelledby="lblShake" data-setting="shake"></button></span></div>
+    <h3>Your progress</h3>
+    <div class="card">
+      <p>Your game saves by itself on this phone. To move it to another phone, copy your save code here and load it there.</p>
+      <button class="btn" data-code="copy">Copy my save code</button>
+      <label for="codeBox" class="code-label">Save code</label>
+      <textarea id="codeBox" class="code-box" rows="3" spellcheck="false" autocomplete="off" placeholder="Paste a save code here to load it"></textarea>
+      <button class="btn" data-code="load">Load this save code</button>
+      <p id="codeMsg" class="code-msg" role="status"></p>
+    </div>
   </div>
 </section>
 
@@ -412,41 +433,73 @@ const coinValue = () => 1 + save.up.rich;
 
 // ---------- Save ----------
 const SAVE_KEY = 'dodge-save-v2';
+const BACKUP_KEY = 'dodge-save-backup';   // a second copy, used if the main one is ever damaged
 function defaults() {
   return { bests: LEVELS.map(() => 0), played: LEVELS.map(() => false), level: 0, coins: 0,
            up: { shield: 0, magnet: 0, luck: 0, rich: 0 }, skins: ['sky'], skin: 'sky', hats: ['none'], hat: 'none',
            stats: { games: 0, dodged: 0, close: 0, coins: 0, time: 0 },
            settings: { sound: true, music: true, vibe: true, shake: !reducedMotion }, tutorialDone: false };
 }
-function loadSave() {
+// Fill in anything an older or partial save is missing.
+function normalize(s) {
   const d = defaults();
-  try {
-    const s = JSON.parse(localStorage.getItem(SAVE_KEY));
-    if (s) {
-      const out = { ...d, ...s, up: { ...d.up, ...s.up }, stats: { ...d.stats, ...s.stats }, settings: { ...d.settings, ...s.settings } };
-      if (!Array.isArray(s.bests)) out.bests = [s.best || 0];   // older saves had one best score, now it's Red's
-      while (out.bests.length < LEVELS.length) out.bests.push(0);
-      if (!Array.isArray(s.played)) out.played = out.bests.map(b => b > 0);
-      while (out.played.length < LEVELS.length) out.played.push(false);
-      return out;
-    }
-  } catch (e) {}
-  return d;
+  const out = { ...d, ...s, up: { ...d.up, ...s.up }, stats: { ...d.stats, ...s.stats }, settings: { ...d.settings, ...s.settings } };
+  if (!Array.isArray(s.bests)) out.bests = [s.best || 0];   // older saves had one best score, now it's Red's
+  while (out.bests.length < LEVELS.length) out.bests.push(0);
+  if (!Array.isArray(s.played)) out.played = out.bests.map(b => b > 0);
+  while (out.played.length < LEVELS.length) out.played.push(false);
+  if (!Array.isArray(out.skins)) out.skins = ['sky'];
+  if (!Array.isArray(out.hats)) out.hats = ['none'];
+  // The first version's looks were replaced; give their coins back.
+  const OLD_SKIN_COST = { mint: 30, bubble: 50, grape: 80, party: 120, cool: 200 };
+  for (const id of out.skins) out.coins += OLD_SKIN_COST[id] || 0;
+  out.skins = out.skins.filter(id => SKINS.some(k => k.id === id));
+  if (!out.skins.includes('sky')) out.skins.unshift('sky');
+  if (!out.skins.includes(out.skin)) out.skin = 'sky';
+  if (!out.hats.includes('none')) out.hats.unshift('none');
+  if (!out.hats.includes(out.hat)) out.hat = 'none';
+  // A save can point at a level that no longer exists (the Rainbow Boss was removed).
+  if (!(out.level < LEVELS.length)) out.level = 0;
+  return out;
 }
-const save = loadSave();
-// The first version's looks were replaced; give their coins back.
-const OLD_SKIN_COST = { mint: 30, bubble: 50, grape: 80, party: 120, cool: 200 };
-for (const id of save.skins) save.coins += OLD_SKIN_COST[id] || 0;
-save.skins = save.skins.filter(id => SKINS.some(k => k.id === id));
-if (!save.skins.includes('sky')) save.skins.unshift('sky');
-if (!save.skins.includes(save.skin)) save.skin = 'sky';
-// A save can point at a level that no longer exists (the Rainbow Boss was removed).
-if (!(save.level < LEVELS.length)) save.level = 0;
+function readSave(key) {
+  try {
+    const s = JSON.parse(localStorage.getItem(key));
+    return s && typeof s === 'object' && typeof s.coins === 'number' ? s : null;
+  } catch (e) { return null; }
+}
+const save = normalize(readSave(SAVE_KEY) || readSave(BACKUP_KEY) || {});
+function persist() {
+  try {
+    const json = JSON.stringify(save);
+    localStorage.setItem(SAVE_KEY, json);
+    localStorage.setItem(BACKUP_KEY, json);
+  } catch (e) {}
+}
 persist();
-function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
+// Ask the browser not to clear the save when the phone runs low on space.
+try { navigator.storage && navigator.storage.persist && navigator.storage.persist().catch(() => {}); } catch (e) {}
+
+// Save codes move progress to another phone: copy on one, paste on the other.
+function saveCode() {
+  return 'DODGE1-' + btoa(unescape(encodeURIComponent(JSON.stringify(save))));
+}
+function loadSaveCode(code) {
+  const m = /DODGE1-([A-Za-z0-9+/=]+)/.exec(code.replace(/\s+/g, ''));
+  if (!m) return false;
+  try {
+    const s = JSON.parse(decodeURIComponent(escape(atob(m[1]))));
+    if (!s || typeof s.coins !== 'number') return false;
+    const fresh = normalize(s);
+    for (const k of Object.keys(save)) delete save[k];
+    Object.assign(save, fresh);
+    persist();
+    return true;
+  } catch (e) { return false; }
+}
+
 const isUnlocked = i => i === 0 || save.bests[i - 1] >= UNLOCK_SCORE;
 const skin = () => SKINS.find(k => k.id === save.skin) || SKINS[0];
-if (!save.hats.includes(save.hat)) save.hat = 'none';
 
 // ---------- Audio (tiny synth, no files) ----------
 let actx = null;
@@ -1153,10 +1206,11 @@ function hudGoal() {
 function hudShields() { $('hudShields').textContent = g.shields > 0 ? `Shields: ${g.shields}` : ''; }
 
 // ---------- Update ----------
-let lastDt = 1 / 60;
+let lastDt = 1 / 60, lastSaved = 0;
 function update(dt) {
   clock += dt;
   lastDt = dt;
+  if (state === 'play' && clock - lastSaved > 5) { persist(); lastSaved = clock; }
   const starSpeed = g && (state === 'play' || state === 'dying') ? speed() * 0.25 : 30;
   for (const s of stars) { s.y += (starSpeed * s.z * dt) / H; if (s.y > 1) { s.y = 0; s.x = Math.random(); } }
 
@@ -1541,6 +1595,31 @@ function renderStats() {
   $('statsList').innerHTML = rows.map(([k, v]) => `<div class="stat"><dt>${k}</dt><dd>${v}</dd></div>`).join('');
 }
 
+function codeMessage(text, ok) {
+  const el = $('codeMsg');
+  el.textContent = text;
+  el.className = 'code-msg ' + (ok ? 'ok' : 'bad');
+}
+$('settings').addEventListener('click', e => {
+  const b = e.target.closest('[data-code]');
+  if (!b) return;
+  const box = $('codeBox');
+  if (b.dataset.code === 'copy') {
+    box.value = saveCode();
+    box.focus(); box.select();
+    const done = () => codeMessage('Copied. Paste it in Dodge on the other phone and tap Load.', true);
+    try { navigator.clipboard.writeText(box.value).then(done, () => codeMessage('Code is in the box. Select it and copy it.', true)); }
+    catch (err) { codeMessage('Code is in the box. Select it and copy it.', true); }
+  } else if (loadSaveCode(box.value)) {
+    box.value = '';
+    sfx.buy();
+    codeMessage(`Loaded! You have ${save.coins} coins and ${save.skins.length} characters.`, true);
+    renderSettings();
+  } else {
+    codeMessage("That code didn't work. Copy the whole code, starting with DODGE1, and try again.", false);
+  }
+});
+
 function renderSettings() {
   for (const sw of document.querySelectorAll('[data-setting]')) {
     const on = save.settings[sw.dataset.setting];
@@ -1634,6 +1713,11 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
+
+// Offline mode: after the first visit the game keeps working with no internet.
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
 </script>
 </body>
 </html>
