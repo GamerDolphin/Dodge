@@ -33,6 +33,7 @@
     --target: 56px;
   }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }   /* without this, .unlock-card's display: flex keeps it visible */
   html, body {
     margin: 0; height: 100%; overflow: hidden;
     background: var(--bg); color: var(--text);
