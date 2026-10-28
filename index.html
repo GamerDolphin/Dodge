@@ -1147,7 +1147,7 @@ function renderLevels() {
     }
     const cur = i === save.level;
     const best = save.bests[i] ? `Best: ${save.bests[i]}` : 'Not played yet';
-    const fresh = !save.played[i] ? '<span class="new-tag">New!</span>' : '';
+    const fresh = i > 0 && !save.played[i] ? '<span class="new-tag">New!</span>' : '';
     return `<button class="level-btn${cur ? ' current' : ''}" data-level="${i}"${cur ? ' data-autofocus' : ''}>${icon}
       <span class="level-text">${name}<span class="level-sub">${fresh}${best}</span></span>
       <span class="level-go">Play</span></button>`;
