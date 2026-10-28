@@ -155,7 +155,6 @@
   .level-name { font-size: var(--text-lg); font-weight: 700; line-height: 1.2; }
   .level-sub { font-size: var(--text-sm); font-weight: 500; color: var(--text-muted); }
   .level-go { font-size: var(--text-lg); font-weight: 700; }
-  .new-tag.beaten { background: var(--gold); color: var(--on-gold); }
   .new-tag { display: inline-block; margin-right: var(--space-2); padding: 0 var(--space-2); border-radius: 999px; background: var(--good); color: #0f2a14; font-weight: 700; }
   .lock { position: relative; flex: none; width: 22px; height: 17px; margin: 10px 4px 0; border-radius: 4px; background: var(--text-muted); }
   .lock::before { content: ""; position: absolute; left: 3px; top: -11px; width: 16px; height: 14px; border: 3px solid var(--text-muted); border-bottom: 0; border-radius: 8px 8px 0 0; box-sizing: border-box; }
@@ -236,7 +235,7 @@
 
 <section id="over" class="screen">
   <div class="panel center">
-    <h2 id="overTitle">Game over</h2>
+    <h2>Game over</h2>
     <p id="overLabel">Squares dodged</p>
     <div id="overScore" class="big-num">0</div>
     <div id="overBest"></div>
@@ -338,12 +337,8 @@ const LEVELS = [
   { name: 'Blue',   noun: 'pluses',    shape: 'plus',     size: 1.05, color: '#3d8bff', dark: '#2457b8', bg: ['#15213f', '#0c1328'] },
   { name: 'Purple', noun: 'stars',     shape: 'star',     size: 1.2,  color: '#b57bff', dark: '#7445c2', bg: ['#1f1838', '#110c22'] },
   { name: 'Pink',   noun: 'hexagons',  shape: 'hexagon',  size: 1.05, color: '#ff6fb5', dark: '#b83d7a', bg: ['#2a1730', '#170c1c'] },
-  { name: 'Rainbow', noun: 'circles', title: 'Rainbow Boss', boss: true, shape: 'circle', size: 0.9, color: '#ff6fb5', dark: '#b83d7a', bg: ['#1d1a36', '#0f0d22'] },
 ];
 const UNLOCK_SCORE = 200;
-const levelTitle = L => L.title || `${L.name} ${L.noun}`;
-// Boss throws every rainbow colour except yellow, so nothing looks like a coin.
-const BOSS_COLORS = [['#ff5d5d', '#b8323f'], ['#ff9f43', '#b8661c'], ['#5fd068', '#2f8a3a'], ['#3d8bff', '#2457b8'], ['#b57bff', '#7445c2'], ['#ff6fb5', '#b83d7a']];
 const MAGNET_RANGE = [0, 80, 130, 190];
 const COIN_EVERY = [3.2, 2.5, 1.9, 1.4];
 
@@ -351,7 +346,7 @@ const COIN_EVERY = [3.2, 2.5, 1.9, 1.4];
 const SAVE_KEY = 'dodge-save-v2';
 function defaults() {
   return { bests: LEVELS.map(() => 0), played: LEVELS.map(() => false), level: 0, coins: 0, up: { shield: 0, magnet: 0, luck: 0 }, skins: ['sky'], skin: 'sky',
-           settings: { sound: true, vibe: true, shake: !reducedMotion }, tutorialDone: false, bossBeaten: false };
+           settings: { sound: true, vibe: true, shake: !reducedMotion }, tutorialDone: false };
 }
 function loadSave() {
   const d = defaults();
@@ -714,7 +709,6 @@ function shapePoints(shape, s) {
     case 'diamond':  return [[0, -s * 1.2], [s * 0.85, 0], [0, s * 1.2], [-s * 0.85, 0]];
     case 'star':     return ring(10, i => (i % 2 ? s * 0.5 : s * 1.1), -Math.PI / 2);
     case 'hexagon':  return ring(6, () => s, 0);
-    case 'circle':   return ring(16, () => s, 0);
     case 'bolt':     return [[0.2, -1.1], [-0.55, 0.1], [-0.05, 0.1], [-0.25, 1.1], [0.6, -0.15], [0.1, -0.15]].map(([x, y]) => [x * s, y * s]);
     case 'plus': {
       const a = s * 0.38;
@@ -733,11 +727,10 @@ function drawShape(c, cx, cy, s, angle, L, colors) {
     c.fillStyle = col; c.strokeStyle = col;
     c.beginPath();
     if (L.shape === 'square') c.roundRect(-s, -s, 2 * s, 2 * s, s * 0.36);
-    else if (L.shape === 'circle') c.arc(0, 0, s, 0, TAU);
     else { pts.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y))); c.closePath(); }
     c.fill();
     // a thick stroke in the same colour rounds the corners; the hitbox stays inside it
-    if (L.shape !== 'square' && L.shape !== 'circle') { c.lineJoin = 'round'; c.lineWidth = s * 0.22; c.stroke(); }
+    if (L.shape !== 'square') { c.lineJoin = 'round'; c.lineWidth = s * 0.22; c.stroke(); }
     c.restore();
   };
   pass(s * 0.14, dark);
@@ -750,60 +743,8 @@ function drawShape(c, cx, cy, s, angle, L, colors) {
   c.restore();
 }
 
-// The Rainbow Boss: a spinning rainbow wheel with an angry face.
-function drawBoss(c, x, y, r, o = {}) {
-  const t = o.t ?? clock, n = 12;
-  c.save();
-  c.translate(x, y);
-  for (let i = 0; i < n; i++) {
-    c.fillStyle = BOSS_COLORS[i % BOSS_COLORS.length][0];
-    c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, r, t * 0.8 + (i * TAU) / n, t * 0.8 + ((i + 1) * TAU) / n); c.closePath(); c.fill();
-  }
-  c.strokeStyle = 'rgba(10,13,26,0.35)'; c.lineWidth = r * 0.06;
-  c.beginPath(); c.arc(0, 0, r, 0, TAU); c.stroke();
-  const f = r * 0.66;
-  c.fillStyle = '#2b2142';
-  c.beginPath(); c.arc(0, 0, f, 0, TAU); c.fill();
-  const lx = (o.lookX || 0) * f * 0.1, ly = (o.lookY || 0) * f * 0.1;
-  for (const sd of [-1, 1]) {
-    c.fillStyle = '#ffffff';
-    c.beginPath(); c.arc(sd * f * 0.38, -f * 0.12, f * 0.24, 0, TAU); c.fill();
-    c.fillStyle = COL.ink;
-    c.beginPath(); c.arc(sd * f * 0.38 + lx, -f * 0.12 + ly, f * 0.12, 0, TAU); c.fill();
-  }
-  c.strokeStyle = '#f4f5fb'; c.lineWidth = f * 0.11; c.lineCap = 'round';
-  c.beginPath();
-  for (const sd of [-1, 1]) { c.moveTo(sd * f * 0.66, -f * 0.56); c.lineTo(sd * f * 0.16, -f * 0.34); }
-  c.stroke();
-  const open = o.mouth > 0 ? 1.8 : 1;
-  c.fillStyle = '#f4f5fb';
-  c.beginPath(); c.roundRect(-f * 0.42, f * 0.26, f * 0.84, f * 0.24 * open, f * 0.1); c.fill();
-  c.strokeStyle = '#2b2142'; c.lineWidth = f * 0.05;
-  c.beginPath();
-  for (let k = 1; k < 4; k++) { c.moveTo(-f * 0.42 + (f * 0.84 * k) / 4, f * 0.26); c.lineTo(-f * 0.42 + (f * 0.84 * k) / 4, f * (0.26 + 0.24 * open)); }
-  c.stroke();
-  c.restore();
-}
-
-function drawLevelIcon(c, x, y, s, L, locked) {
-  if (L.boss && !locked) drawBoss(c, x, y, s * 1.1, { t: 0, lookY: 0.6 });
-  else drawShape(c, x, y, s, 0, L, locked ? ['#59607f', '#363c5c'] : null);
-}
-
-function drawBossBar() {
-  const B = g.boss, left = Math.max(0, UNLOCK_SCORE - g.score);
-  const w = Math.min(W * 0.6, 260 * S), h = 14 * S, x0 = W / 2 - w / 2, y0 = B.y + B.r + 18 * S;
-  ctx.fillStyle = 'rgba(10,13,26,0.75)';
-  ctx.beginPath(); ctx.roundRect(x0 - 3, y0 - 3, w + 6, h + 6, h); ctx.fill();
-  const grad = ctx.createLinearGradient(x0, 0, x0 + w, 0);
-  BOSS_COLORS.forEach(([col], i) => grad.addColorStop(i / (BOSS_COLORS.length - 1), col));
-  ctx.fillStyle = grad;
-  ctx.beginPath(); ctx.roundRect(x0, y0, Math.max(h, (w * left) / UNLOCK_SCORE), h, h / 2); ctx.fill();
-  label(`${left} to go`, W / 2, y0 + h + 18 * S, 18 * S, '#fff');
-}
-
 function drawBlock(c, b) {
-  drawShape(c, b.x + b.w / 2, b.y + b.h / 2, b.w / 2, b.angle, g.L, b.colors);
+  drawShape(c, b.x + b.w / 2, b.y + b.h / 2, b.w / 2, b.angle, g.L);
 }
 
 function label(str, x, y, size, color, align = 'center') {
@@ -838,8 +779,7 @@ function startGame(lvl = save.level) {
   g = { level: lvl, L: LEVELS[lvl], startBest: save.bests[lvl], unlocked: false,
         unlockNext: lvl + 1 < LEVELS.length && !isUnlocked(lvl + 1),
         time: 0, score: 0, runCoins: 0, shields: save.up.shield, blocks: [], coins: [],
-        spawnT: 1.4, coinT: 2.2, hitstop: 0, invuln: 0, deadT: 0, nextMile: 25, burst: false,
-        won: false, wonT: 0, boss: LEVELS[lvl].boss ? { x: W / 2, y: H * 0.28, r: 56 * S, mouth: 0, dead: false } : null };
+        spawnT: 1.4, coinT: 2.2, hitstop: 0, invuln: 0, deadT: 0, nextMile: 25, burst: false };
   particles = []; popups = []; flyers = []; rings = []; player.hist = [];
   player.x = player.tx = W / 2; player.vx = 0; player.hidden = false; player.mood = 'happy';
   shownCoins = save.coins;
@@ -874,7 +814,6 @@ function giveCoin(x, y) {
 // Distance from the character's edge to the shape's edge (negative = overlapping), using the drawn outline.
 function shapeGap(b) {
   const cx = b.x + b.w / 2, cy = b.y + b.h / 2, ca = Math.cos(b.angle), sa = Math.sin(b.angle);
-  if (g.L.shape === 'circle') return Math.hypot(player.x - cx, player.y - cy) - b.w / 2 - player.r;
   const pts = shapePoints(g.L.shape, b.w / 2).map(([x, y]) => [cx + x * ca - y * sa, cy + x * sa + y * ca]);
   const px = player.x, py = player.y;
   let inside = false, md = Infinity;
@@ -896,15 +835,13 @@ function onPass(b) {
     giveCoin(player.x, player.y - player.r);
     sfx.close();
   }
-  if (g.boss && !g.won && g.score >= UNLOCK_SCORE) {
-    winBoss();
-  } else if (g.unlockNext && !g.unlocked && g.score >= UNLOCK_SCORE) {
+  if (g.unlockNext && !g.unlocked && g.score >= UNLOCK_SCORE) {
     g.unlocked = true;
     save.bests[g.level] = Math.max(save.bests[g.level], g.score);
     persist();
     const N = LEVELS[g.level + 1];
     addPopup('New level unlocked!', W / 2, H * 0.3, COL.gold, 30, 2.4);
-    addPopup(levelTitle(N), W / 2, H * 0.3 + 44 * S, N.color, 30, 2.4);
+    addPopup(`${N.name} ${N.noun}`, W / 2, H * 0.3 + 44 * S, N.color, 30, 2.4);
     burst(W / 2, H * 0.3, 70, [N.color, COL.gold, '#ffffff'], 460, 500);
     sfx.mile(); tone(1568, 0.3, { type: 'triangle', vol: 0.12, delay: 0.34 });
     vibrate([40, 40, 40, 40, 80]);
@@ -918,31 +855,11 @@ function onPass(b) {
   }
 }
 
-function winBoss() {
-  const B = g.boss;
-  g.won = true; g.invuln = 99; B.dead = true;
-  for (const b of g.blocks) burst(b.x + b.w / 2, b.y + b.h / 2, 8, [b.colors ? b.colors[0] : g.L.color, '#fff'], 200);
-  g.blocks = []; g.coins = [];
-  const colors = [...BOSS_COLORS.map(c => c[0]), '#ffffff', COL.gold];
-  for (let i = 0; i < 4; i++) burst(B.x, B.y, 40, colors, 300 + i * 120, 400);
-  rings.push({ x: B.x, y: B.y, r0: B.r, r1: B.r * 5, life: 0.8, max: 0.8 });
-  addShake(20); flash = 0.35;
-  addPopup('You beat the', W / 2, H * 0.42, '#fff', 34, 2.6);
-  addPopup('Rainbow Boss!', W / 2, H * 0.42 + 46 * S, COL.gold, 40, 2.6);
-  sfx.mile();
-  [784, 988, 1175, 1568].forEach((f, i) => tone(f, 0.25, { type: 'triangle', vol: 0.12, delay: 0.45 + i * 0.12 }));
-  vibrate([60, 40, 60, 40, 200]);
-  save.bossBeaten = true;
-  save.bests[g.level] = Math.max(save.bests[g.level], g.score);
-  persist();
-  hudGoal();
-}
-
 function onHit(b) {
   if (g.shields > 0) {
     g.shields--; g.invuln = 1.5;
     g.blocks.splice(g.blocks.indexOf(b), 1);
-    burst(b.x + b.w / 2, b.y + b.h / 2, 18, [b.colors ? b.colors[0] : g.L.color, '#fff'], 300);
+    burst(b.x + b.w / 2, b.y + b.h / 2, 18, [g.L.color, '#fff'], 300);
     burst(player.x, player.y, 26, ['#d2f0ff', '#9fdcff', '#ffffff', '#ff9ad5'], 340);
     rings.push({ x: player.x, y: player.y, r0: player.r * 1.5, r1: player.r * 4, life: 0.4, max: 0.4 });
     addPopup('Bubble saved you!', player.x, player.y - player.r * 2.4, '#9fdcff', 24, 1.2);
@@ -967,8 +884,6 @@ function endGame() {
   $('overBest').innerHTML = isBest && g.score > 0
     ? '<span class="badge pop">New best!</span>'
     : `<p>Best: <strong>${save.bests[g.level]}</strong></p>`;
-  $('overTitle').textContent = g.won ? 'You win!' : 'Game over';
-  if (g.won) $('overBest').innerHTML = '<span class="badge pop">You beat the Rainbow Boss!</span>';
   $('overLabel').textContent = `${g.L.noun[0].toUpperCase() + g.L.noun.slice(1)} dodged`;
   $('playAgainBtn').textContent = `Play ${g.L.name} again`;
   const next = g.unlocked ? g.level + 1 : -1;   // only on the game that reached the unlock score
@@ -976,11 +891,11 @@ function endGame() {
   if (next >= 0) {
     const N = LEVELS[next];
     $('playNextBtn').dataset.next = next;
-    $('unlockName').textContent = levelTitle(N);
+    $('unlockName').textContent = `${N.name} ${N.noun}`;
     $('playNextBtn').textContent = `Play ${N.name}`;
     const c = $('unlockIcon').getContext('2d');
     c.clearRect(0, 0, 120, 120);
-    drawLevelIcon(c, 60, 56, 34, N, false);
+    drawShape(c, 60, 56, 34, 0, N);
   }
   $('overCoins').textContent = `+${g.runCoins} coin${g.runCoins === 1 ? '' : 's'}`;
   $('overHint').hidden = !canAffordSomething();
@@ -1009,8 +924,7 @@ function hudScore() { const el = $('hudScore'); el.textContent = g.score; bump(e
 function hudCoins() { $('hudCoins').textContent = shownCoins; }
 function hudGoal() {
   const N = LEVELS[g.level + 1];
-  $('hudGoal').textContent = g.boss ? (g.won ? '' : 'Beat the boss!')
-    : g.unlockNext && !g.unlocked ? `Get ${UNLOCK_SCORE} to unlock ${N.title || N.name}` : '';
+  $('hudGoal').textContent = g.unlockNext && !g.unlocked ? `Get ${UNLOCK_SCORE} to unlock ${N.name}` : '';
 }
 function hudShields() { $('hudShields').textContent = g.shields > 0 ? `Shields: ${g.shields}` : ''; }
 
@@ -1062,33 +976,16 @@ function stepGame(dt) {
     if (player.hist.length > 16) player.hist.pop();
     emitTrail(skin());
 
-    const B = g.boss;
-    if (B && !B.dead) {
-      B.x = W / 2 + Math.sin(g.time * 0.7) * (W / 2 - B.r - 12 * S);
-      B.mouth = Math.max(0, B.mouth - dt);
-    }
-    if (g.won) {
-      g.wonT += dt;
-      if (g.wonT > 2.6) { endGame(); return; }
-    }
     g.spawnT -= dt;
-    if (g.spawnT <= 0 && !g.won) {
+    if (g.spawnT <= 0) {
       const size = rand(34, 62) * S * g.L.size;
-      const b = { x: rand(0, W - size), y: -size, w: size, h: size, vx: 0, vy: speed() * rand(0.85, 1.15),
-                  wob: rand(0, TAU), wobS: rand(1, 2.5), angle: 0, spin: g.L.shape === 'star' || g.L.shape === 'plus' ? rand(-1.6, 1.6) : 0,
-                  minGap: Infinity, passed: false };
-      if (B) {   // the boss throws them from its mouth
-        b.x = clamp(B.x + rand(-0.6, 0.6) * B.r - size / 2, 0, W - size);
-        b.y = B.y - size / 2;
-        b.vx = rand(-60, 60) * S;
-        b.colors = BOSS_COLORS[(Math.random() * BOSS_COLORS.length) | 0];
-        B.mouth = 0.25;
-      }
-      g.blocks.push(b);
+      g.blocks.push({ x: rand(0, W - size), y: -size, w: size, h: size, vy: speed() * rand(0.85, 1.15),
+                      wob: rand(0, TAU), wobS: rand(1, 2.5), angle: 0, spin: g.L.shape === 'star' || g.L.shape === 'plus' ? rand(-1.6, 1.6) : 0,
+                      minGap: Infinity, passed: false });
       g.spawnT = spawnEvery();
     }
     g.coinT -= dt;
-    if (g.coinT <= 0 && !g.won) {
+    if (g.coinT <= 0) {
       g.coins.push({ x: rand(30, W - 30) , y: -20, r: 15 * S, vy: speed() * 0.7, spin: rand(0, TAU) });
       g.coinT = COIN_EVERY[save.up.luck] * rand(0.8, 1.2);
     }
@@ -1106,7 +1003,6 @@ function stepGame(dt) {
   let threat = null, threatD = 220 * S;
   for (const b of g.blocks) {
     b.y += b.vy * dt * k;
-    b.x += (b.vx || 0) * dt * k;
     b.wob += b.wobS * dt * k;
     b.angle = b.spin ? b.angle + b.spin * dt * k : Math.sin(b.wob) * 0.12;
     if (b.y + b.h > player.y - player.r && b.y < player.y + player.r) b.minGap = Math.min(b.minGap, shapeGap(b));
@@ -1155,14 +1051,8 @@ function draw() {
   if (shake > 0) ctx.translate(rand(-shake, shake), rand(-shake, shake));
 
   if (g && ['play', 'paused', 'dying'].includes(state)) {
-    const B = g.boss;
-    if (B && !B.dead) {
-      drawBoss(ctx, B.x, B.y + Math.sin(clock * 2) * 4 * S, B.r,
-               { mouth: B.mouth, lookX: clamp((player.x - B.x) / (150 * S), -1, 1), lookY: 1 });
-    }
     for (const c of g.coins) drawCoin(ctx, c.x, c.y, c.r, c.spin);
     for (const b of g.blocks) drawBlock(ctx, b);
-    if (B && !B.dead) drawBossBar();
 
     drawParticles(true);
     if (!player.hidden) {
@@ -1257,7 +1147,7 @@ function go(name) {
 function renderLevels() {
   $('levelList').innerHTML = LEVELS.map((L, i) => {
     const icon = `<canvas class="level-icon" width="112" height="112" data-icon="${i}" aria-hidden="true"></canvas>`;
-    const name = `<span class="level-name">${levelTitle(L)}</span>`;
+    const name = `<span class="level-name">${L.name} ${L.noun}</span>`;
     if (!isUnlocked(i)) {
       return `<button class="level-btn" disabled>${icon}<span class="level-text">${name}
         <span class="level-sub">Get ${UNLOCK_SCORE} on ${LEVELS[i - 1].name} to unlock</span></span>
@@ -1265,15 +1155,14 @@ function renderLevels() {
     }
     const cur = i === save.level;
     const best = save.bests[i] ? `Best: ${save.bests[i]}` : 'Not played yet';
-    const fresh = L.boss && save.bossBeaten ? '<span class="new-tag beaten">Beaten!</span>'
-      : i > 0 && !save.played[i] ? '<span class="new-tag">New!</span>' : '';
+    const fresh = i > 0 && !save.played[i] ? '<span class="new-tag">New!</span>' : '';
     return `<button class="level-btn${cur ? ' current' : ''}" data-level="${i}"${cur ? ' data-autofocus' : ''}>${icon}
       <span class="level-text">${name}<span class="level-sub">${fresh}${best}</span></span>
       <span class="level-go">Play</span></button>`;
   }).join('');
   for (const cv of document.querySelectorAll('[data-icon]')) {
     const i = +cv.dataset.icon;
-    drawLevelIcon(cv.getContext('2d'), 56, 52, 30, LEVELS[i], !isUnlocked(i));
+    drawShape(cv.getContext('2d'), 56, 52, 30, 0, LEVELS[i], isUnlocked(i) ? null : ['#59607f', '#363c5c']);
   }
 }
 
