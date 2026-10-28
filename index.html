@@ -241,7 +241,7 @@
     <div class="coin-pill"><span class="coin-icon"></span><span id="overCoins">+0 coins</span></div>
     <div id="overUnlock" class="unlock-card" hidden>
       <canvas id="unlockIcon" width="120" height="120" aria-hidden="true"></canvas>
-      <strong id="unlockTitle">New level unlocked!</strong>
+      <strong>New level unlocked!</strong>
       <span id="unlockName" class="unlock-name"></span>
       <button id="playNextBtn" class="btn" data-act="play-next">Play it</button>
     </div>
@@ -885,12 +885,11 @@ function endGame() {
     : `<p>Best: <strong>${save.bests[g.level]}</strong></p>`;
   $('overLabel').textContent = `${g.L.noun[0].toUpperCase() + g.L.noun.slice(1)} dodged`;
   $('playAgainBtn').textContent = `Play ${g.L.name} again`;
-  const next = newLevel();
+  const next = g.unlocked ? g.level + 1 : -1;   // only on the game that reached the unlock score
   $('overUnlock').hidden = next < 0;
   if (next >= 0) {
     const N = LEVELS[next];
     $('playNextBtn').dataset.next = next;
-    $('unlockTitle').textContent = g.unlocked ? 'New level unlocked!' : 'Try your new level!';
     $('unlockName').textContent = `${N.name} ${N.noun}`;
     $('playNextBtn').textContent = `Play ${N.name}`;
     const c = $('unlockIcon').getContext('2d');
@@ -901,12 +900,6 @@ function endGame() {
   $('overHint').hidden = !canAffordSomething();
   showScreen('over');
   countUp($('overScore'), g.score, Math.min(900, 200 + g.score * 15));
-}
-
-// The newest unlocked level nobody has played yet, or -1.
-function newLevel() {
-  for (let i = LEVELS.length - 1; i > 0; i--) if (isUnlocked(i) && !save.played[i]) return i;
-  return -1;
 }
 
 function canAffordSomething() {
